@@ -17,7 +17,7 @@ Existing single-image 3D human avatar methods primarily rely on rigid joint tran
 
 ---
 
-## TODO List
+## TODO
 - [x] Release inference code
 - [ ] Release train code
 - [ ] Release re-annotated datasets
@@ -72,7 +72,7 @@ Download the pretrained [DynaAvatar checkpoint](https://drive.google.com/drive/f
 
 ---
 
-## 💻 Inference 
+## 💃 Inference 
 
 ### Usage Example
 Here are two examples using different motion sequences (e.g., DNA-Rendering and 4D-DRESS datasets). 
@@ -81,7 +81,7 @@ Here are two examples using different motion sequences (e.g., DNA-Rendering and 
 ```bash
 CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
     /data1/qw00n/DynaAvatar_RELEASE/assets/novel_subject \
-    /data3/jane/DNA_Rendering/DNA_Rendering_inference_seqs/0010_03/smplx/smplx_params_smooth \
+    PATH/motion_seqs/DNA_Rendering/0124_03/smplx/smplx_params_smooth \
     None 0 500 15
 ```
 
@@ -89,7 +89,7 @@ CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
 ```bash
 CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
     /data1/qw00n/DynaAvatar_RELEASE/assets/novel_subject \
-    /data3/jane/4D-DRESS/4D-DRESS/00137_outer_12/smplx/smplx_params_smooth \
+    PATH/motion_seqs/4D-DRESS/00152_outer_16/smplx/smplx_params_smooth \
     None 0 500 30
 ```
 
