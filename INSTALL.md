@@ -1,7 +1,6 @@
 # Installation
-
+  Our experiments were conducted on an **NVIDIA RTX pro 6000 (Blackwell)** server. However, it is also compatible with other environments such as **A100 clusters**, provided that the PyTorch and CUDA versions are correctly matched.
 ## Requirements
-
 - Linux
 - Python 3.10
 
@@ -26,16 +25,17 @@
   # cuda 12.1
   pip install -U xformers==0.0.26.post1 --index-url https://download.pytorch.org/whl/cu121
 
-  # For Blackwell architecture (Compute Capability 12.0), build from source
+  # For Blackwell architecture, build from source
   # Refer to: https://github.com/Dao-AILab/flash-attention/issues/1763#issuecomment-3418680836
   pip install ninja
   export TORCH_CUDA_ARCH_LIST="12.0"
-  pip install -v --no-build-isolation -U git+https://github.com/facebookresearch/xformers.git@main#egg=xformers
+  pip install --no-build-isolation --pre -v -U git+https://github.com/facebookresearch/xformers.git@fde5a2fb46e3f83d73e2974a4d12caf526a4203e
   ```
 
 ## 3. Install base dependencies
   ```bash
   pip install -r requirements.txt
+  pip install chumpy --no-build-isolation
 
   # install from source code to avoid the conflict with torchvision
   pip uninstall basicsr
@@ -47,15 +47,12 @@
 pip install --no-build-isolation git+https://github.com/hitsz-zuoqi/sam2/
 
 # or
-cd ..
 git clone --recursive https://github.com/hitsz-zuoqi/sam2
 pip install ./sam2
 ```
 
 ## 5. Install 3DGS python-bings
 ```bash
-cd ..
-
 # we use the version modified by Jiaxiang Tang, thanks for this great job!
 git clone --recursive https://github.com/ashawkey/diff-gaussian-rasterization
 pip install --no-build-isolation ./diff-gaussian-rasterization

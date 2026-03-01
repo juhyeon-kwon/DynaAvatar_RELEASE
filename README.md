@@ -20,7 +20,7 @@ Existing single-image 3D human avatar methods primarily rely on rigid joint tran
 ## TODO List
 - [x] Release inference code
 - [ ] Release train code
-- [ ] Release re-annotated datsets
+- [ ] Release re-annotated datasets
 
 ---
 
