@@ -1,0 +1,1785 @@
+HfModel(
+  (encoder): Dinov2FusionWrapper(
+    (model): DinoVisionTransformer(
+      (patch_embed): PatchEmbed(
+        (proj): Conv2d(3, 1024, kernel_size=(14, 14), stride=(14, 14))
+        (norm): Identity()
+      )
+      (blocks): ModuleList(
+        (0-23): 24 x Block(
+          (norm1): LayerNorm((1024,), eps=1e-06, elementwise_affine=True)
+          (attn): MemEffAttention(
+            (qkv): Linear(in_features=1024, out_features=3072, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+          )
+          (ls1): LayerScale()
+          (drop_path1): Identity()
+          (norm2): LayerNorm((1024,), eps=1e-06, elementwise_affine=True)
+          (mlp): Mlp(
+            (fc1): Linear(in_features=1024, out_features=4096, bias=True)
+            (act): GELU(approximate='none')
+            (fc2): Linear(in_features=4096, out_features=1024, bias=True)
+            (drop): Dropout(p=0.0, inplace=False)
+          )
+          (ls2): LayerScale()
+          (drop_path2): Identity()
+        )
+      )
+      (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=True)
+      (head): Identity()
+    )
+    (fusion_head): DPTHead(
+      (projects): ModuleList(
+        (0-3): 4 x Conv2d(1024, 1024, kernel_size=(1, 1), stride=(1, 1))
+      )
+      (output_conv): Conv2d(4096, 1024, kernel_size=(1, 1), stride=(1, 1))
+    )
+  )
+  (pcl_embed): PointEmbed(
+    (mlp): Linear(in_features=51, out_features=1024, bias=True)
+    (norm): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+  )
+  (transformer): TransformerDecoder(
+    (layers): ModuleList(
+      (0-3): 4 x SD3BodyHeadMMJointTransformerBlock(
+        (head_dit): SD3MMJointTransformerBlock(
+          (norm1): AdaLayerNormZero(
+            (silu): SiLU()
+            (linear): Linear(in_features=1024, out_features=6144, bias=True)
+            (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          )
+          (norm1_context): AdaLayerNormZero(
+            (silu): SiLU()
+            (linear): Linear(in_features=1024, out_features=6144, bias=True)
+            (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          )
+          (attn): Attention(
+            (norm_q): RMSNorm()
+            (norm_k): RMSNorm()
+            (to_q): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_k): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_v): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_k_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_v_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_q_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_out): ModuleList(
+              (0): Linear(in_features=1024, out_features=1024, bias=True)
+              (1): Dropout(p=0.0, inplace=False)
+            )
+            (to_add_out): Linear(in_features=1024, out_features=1024, bias=True)
+            (norm_added_q): RMSNorm()
+            (norm_added_k): RMSNorm()
+          )
+          (norm2): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          (ff): FeedForward(
+            (net): ModuleList(
+              (0): GELU(
+                (proj): Linear(in_features=1024, out_features=4096, bias=True)
+              )
+              (1): Dropout(p=0.0, inplace=False)
+              (2): Linear(in_features=4096, out_features=1024, bias=True)
+            )
+          )
+          (norm2_context): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          (ff_context): FeedForward(
+            (net): ModuleList(
+              (0): GELU(
+                (proj): Linear(in_features=1024, out_features=4096, bias=True)
+              )
+              (1): Dropout(p=0.0, inplace=False)
+              (2): Linear(in_features=4096, out_features=1024, bias=True)
+            )
+          )
+        )
+        (body_dit): SD3MMJointTransformerBlock(
+          (norm1): AdaLayerNormZero(
+            (silu): SiLU()
+            (linear): Linear(in_features=1024, out_features=6144, bias=True)
+            (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          )
+          (norm1_context): AdaLayerNormZero(
+            (silu): SiLU()
+            (linear): Linear(in_features=1024, out_features=6144, bias=True)
+            (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          )
+          (attn): Attention(
+            (norm_q): RMSNorm()
+            (norm_k): RMSNorm()
+            (to_q): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_k): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_v): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_k_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_v_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_q_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_out): ModuleList(
+              (0): Linear(in_features=1024, out_features=1024, bias=True)
+              (1): Dropout(p=0.0, inplace=False)
+            )
+            (to_add_out): Linear(in_features=1024, out_features=1024, bias=True)
+            (norm_added_q): RMSNorm()
+            (norm_added_k): RMSNorm()
+          )
+          (norm2): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          (ff): FeedForward(
+            (net): ModuleList(
+              (0): GELU(
+                (proj): Linear(in_features=1024, out_features=4096, bias=True)
+              )
+              (1): Dropout(p=0.0, inplace=False)
+              (2): Linear(in_features=4096, out_features=1024, bias=True)
+            )
+          )
+          (norm2_context): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          (ff_context): FeedForward(
+            (net): ModuleList(
+              (0): GELU(
+                (proj): Linear(in_features=1024, out_features=4096, bias=True)
+              )
+              (1): Dropout(p=0.0, inplace=False)
+              (2): Linear(in_features=4096, out_features=1024, bias=True)
+            )
+          )
+        )
+      )
+      (4): SD3BodyHeadMMJointTransformerBlock(
+        (head_dit): SD3MMJointTransformerBlock(
+          (norm1): AdaLayerNormZero(
+            (silu): SiLU()
+            (linear): Linear(in_features=1024, out_features=6144, bias=True)
+            (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          )
+          (norm1_context): AdaLayerNormContinuous(
+            (silu): SiLU()
+            (linear): Linear(in_features=1024, out_features=2048, bias=True)
+            (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          )
+          (attn): Attention(
+            (norm_q): RMSNorm()
+            (norm_k): RMSNorm()
+            (to_q): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_k): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_v): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_k_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_v_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_q_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_out): ModuleList(
+              (0): Linear(in_features=1024, out_features=1024, bias=True)
+              (1): Dropout(p=0.0, inplace=False)
+            )
+            (norm_added_q): RMSNorm()
+            (norm_added_k): RMSNorm()
+          )
+          (norm2): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          (ff): FeedForward(
+            (net): ModuleList(
+              (0): GELU(
+                (proj): Linear(in_features=1024, out_features=4096, bias=True)
+              )
+              (1): Dropout(p=0.0, inplace=False)
+              (2): Linear(in_features=4096, out_features=1024, bias=True)
+            )
+          )
+        )
+        (body_dit): SD3MMJointTransformerBlock(
+          (norm1): AdaLayerNormZero(
+            (silu): SiLU()
+            (linear): Linear(in_features=1024, out_features=6144, bias=True)
+            (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          )
+          (norm1_context): AdaLayerNormContinuous(
+            (silu): SiLU()
+            (linear): Linear(in_features=1024, out_features=2048, bias=True)
+            (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          )
+          (attn): Attention(
+            (norm_q): RMSNorm()
+            (norm_k): RMSNorm()
+            (to_q): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_k): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_v): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_k_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_v_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (add_q_proj): Linear(in_features=1024, out_features=1024, bias=True)
+            (to_out): ModuleList(
+              (0): Linear(in_features=1024, out_features=1024, bias=True)
+              (1): Dropout(p=0.0, inplace=False)
+            )
+            (norm_added_q): RMSNorm()
+            (norm_added_k): RMSNorm()
+          )
+          (norm2): LayerNorm((1024,), eps=1e-06, elementwise_affine=False)
+          (ff): FeedForward(
+            (net): ModuleList(
+              (0): GELU(
+                (proj): Linear(in_features=1024, out_features=4096, bias=True)
+              )
+              (1): Dropout(p=0.0, inplace=False)
+              (2): Linear(in_features=4096, out_features=1024, bias=True)
+            )
+          )
+        )
+      )
+    )
+    (norm): LayerNorm((1024,), eps=1e-06, elementwise_affine=True)
+    (linear_cond_proj): Linear(in_features=1536, out_features=1024, bias=True)
+  )
+  (renderer): GS3DRenderer(
+    (smplx_model): SMPLXVoxelMeshModel(
+      (smplx_layer): SMPLX(
+        Gender: NEUTRAL
+        Number of joints: 55
+        Betas: 10
+        Flat hand mean: True
+        Number of Expression Coefficients: 100
+        (vertex_joint_selector): VertexJointSelector()
+      )
+    )
+    (mlp_net): MLP(
+      (layers): Sequential(
+        (0): Linear(in_features=1024, out_features=512, bias=True)
+        (1): SiLU(inplace=True)
+        (2): Linear(in_features=512, out_features=512, bias=True)
+        (3): SiLU(inplace=True)
+        (4): Linear(in_features=512, out_features=1024, bias=True)
+      )
+    )
+    (gs_net): GSLayer(
+      (out_layers): ModuleDict(
+        (shs): Linear(in_features=1024, out_features=3, bias=True)
+        (scaling): Linear(in_features=1024, out_features=3, bias=True)
+        (xyz): Linear(in_features=1024, out_features=3, bias=True)
+        (opacity): Linear(in_features=1024, out_features=1, bias=True)
+        (rotation): Linear(in_features=1024, out_features=4, bias=True)
+      )
+    )
+  )
+  (id_face_net): ResNetArcFace(
+    (conv1): Conv2d(1, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+    (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (prelu): PReLU(num_parameters=1)
+    (maxpool): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (layer1): Sequential(
+      (0): IRBlock(
+        (bn0): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (prelu): PReLU(num_parameters=1)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+      (1): IRBlock(
+        (bn0): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (prelu): PReLU(num_parameters=1)
+        (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (layer2): Sequential(
+      (0): IRBlock(
+        (bn0): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (prelu): PReLU(num_parameters=1)
+        (conv2): Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(64, 128, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): IRBlock(
+        (bn0): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (prelu): PReLU(num_parameters=1)
+        (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (layer3): Sequential(
+      (0): IRBlock(
+        (bn0): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (prelu): PReLU(num_parameters=1)
+        (conv2): Conv2d(128, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(128, 256, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): IRBlock(
+        (bn0): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv1): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (prelu): PReLU(num_parameters=1)
+        (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (layer4): Sequential(
+      (0): IRBlock(
+        (bn0): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv1): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (prelu): PReLU(num_parameters=1)
+        (conv2): Conv2d(256, 512, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (downsample): Sequential(
+          (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+          (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (1): IRBlock(
+        (bn0): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (conv1): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (prelu): PReLU(num_parameters=1)
+        (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (bn4): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (dropout): Dropout(p=0.5, inplace=False)
+    (fc5): Linear(in_features=32768, out_features=512, bias=True)
+    (bn5): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  )
+  (fine_encoder): SapiensWrapper(
+    (model): RecursiveScriptModule(
+      original_name=MAE
+      (data_preprocessor): RecursiveScriptModule(original_name=SelfSupDataPreprocessor)
+      (backbone): RecursiveScriptModule(
+        original_name=MAEViT
+        (patch_embed): RecursiveScriptModule(
+          original_name=PatchEmbed
+          (adaptive_padding): RecursiveScriptModule(original_name=AdaptivePadding)
+          (projection): RecursiveScriptModule(original_name=Conv2d)
+        )
+        (drop_after_pos): RecursiveScriptModule(original_name=Dropout)
+        (layers): RecursiveScriptModule(
+          original_name=ModuleList
+          (0): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (1): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (2): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (3): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (4): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (5): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (6): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (7): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (8): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (9): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (10): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (11): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (12): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (13): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (14): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (15): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (16): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (17): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (18): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (19): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (20): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (21): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (22): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (23): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (24): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (25): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (26): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (27): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (28): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (29): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (30): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (31): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (32): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (33): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (34): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (35): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (36): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (37): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (38): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (39): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+        )
+        (pre_norm): RecursiveScriptModule(original_name=Identity)
+        (ln1): RecursiveScriptModule(original_name=LayerNorm)
+      )
+      (neck): RecursiveScriptModule(
+        original_name=MAEPretrainDecoder
+        (decoder_embed): RecursiveScriptModule(original_name=Linear)
+        (decoder_blocks): RecursiveScriptModule(
+          original_name=ModuleList
+          (0): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (1): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (2): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (3): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (4): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (5): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (6): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+          (7): RecursiveScriptModule(
+            original_name=TransformerEncoderLayer
+            (ln1): RecursiveScriptModule(original_name=LayerNorm)
+            (attn): RecursiveScriptModule(
+              original_name=MultiheadAttention
+              (qkv): RecursiveScriptModule(original_name=Linear)
+              (proj): RecursiveScriptModule(original_name=Linear)
+              (proj_drop): RecursiveScriptModule(original_name=Dropout)
+              (out_drop): RecursiveScriptModule(original_name=DropPath)
+              (gamma1): RecursiveScriptModule(original_name=Identity)
+            )
+            (ln2): RecursiveScriptModule(original_name=LayerNorm)
+            (ffn): RecursiveScriptModule(
+              original_name=FFN
+              (layers): RecursiveScriptModule(
+                original_name=Sequential
+                (0): RecursiveScriptModule(
+                  original_name=Sequential
+                  (0): RecursiveScriptModule(original_name=Linear)
+                  (1): RecursiveScriptModule(original_name=GELU)
+                  (2): RecursiveScriptModule(original_name=Dropout)
+                )
+                (1): RecursiveScriptModule(original_name=Linear)
+                (2): RecursiveScriptModule(original_name=Dropout)
+              )
+              (dropout_layer): RecursiveScriptModule(original_name=DropPath)
+              (gamma2): RecursiveScriptModule(original_name=Identity)
+            )
+          )
+        )
+        (ln1): RecursiveScriptModule(original_name=LayerNorm)
+        (decoder_pred): RecursiveScriptModule(original_name=Linear)
+      )
+      (head): RecursiveScriptModule(
+        original_name=MAEPretrainHead
+        (loss_module): RecursiveScriptModule(
+          original_name=PixelReconstructionLoss
+          (penalty): RecursiveScriptModule(original_name=MSELoss)
+        )
+      )
+    )
+  )
+  (motion_embed_mlp): Sequential(
+    (0): Linear(in_features=1536, out_features=768, bias=True)
+    (1): SiLU()
+    (2): Linear(in_features=768, out_features=2048, bias=True)
+  )
+)
