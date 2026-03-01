@@ -1,29 +1,26 @@
-# DynaAvatar: Dynamic Human Avatar Synthesis with LHM Priors
+# 💃 DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image
 
-## CVPR 2025
+## CVPR 2026
 
 ### [[Project Page]](#) | [[Paper]](#) | [[arXiv]](#) | [[Poster]](#) | [Video](#)
 
 **This is the official PyTorch implementation of the approach described in the following paper:**
-> **DynaAvatar: Dynamic Human Avatar Synthesis with LHM Priors**\
-> [Your Name*], [Co-Author*], and [Junmo Kim†]\
-> IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2025
+> **DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image**\
+> [Joohyun Kwon*], [Geonhee Sim*], and [Gyeongsik Moon†]\
+> IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2026
 
 ---
 
-## 🏠 Overview
-DynaAvatar is a high-performance framework designed for high-fidelity dynamic human avatar synthesis. By integrating Large Human Model (LHM) priors with a 4D Gaussian-based representation, our method achieves superior temporal consistency and visual quality when reconstructing complex human motions.
-
-![overall_framework](figs/pipeline.jpg)
-> Overall pipeline of DynaAvatar. Our method effectively separates static and dynamic components to optimize the synthesis process for realistic human motion.
+## Abstract
+![overall_framework](assets/intro_compare.jpg)
+Existing single-image 3D human avatar methods primarily rely on rigid joint transformations, limiting their ability to model realistic cloth dynamics. We present DynaAvatar, a zero-shot framework that reconstructs animatable 3D human avatars with motion-dependent cloth dynamics from a single image. Trained on large-scale multi-person motion datasets, DynaAvatar employs a Transformer-based feed-forward architecture that directly predicts dynamic 3D Gaussian deformations without subject-specific optimization. To overcome the scarcity of dynamic captures, we introduce a static-to-dynamic knowledge transfer strategy: a Transformer pretrained on large-scale static captures provides strong geometric and appearance priors, which are efficiently adapted to motion-dependent deformations through lightweight LoRA fine-tuning on dynamic captures. We further propose the DynaFlow loss, an optical flow–guided objective that provides reliable motion-direction geometric cues for cloth dynamics in rendered space. Finally, we reannotate the missing or noisy SMPL-X fittings in existing dynamic capture datasets, as most public dynamic capture datasets contain incomplete or unreliable fittings that are unsuitable for training high-quality 3D avatar reconstruction models. Experiments demonstrate that DynaAvatar produces visually rich and generalizable animations, outperforming prior methods. Code, pretrained models, and reannotations will be released.
 
 ---
 
-## 📝 TODO List
-- [x] Release core inference code
-- [x] Release LHM prior integration modules
-- [x] Provide pre-trained checkpoints
-- [ ] Release training scripts and data processing tools
+## TODO List
+- [x] Release inference code
+- [] Release train code
+- [ ] Release re-annotated datsets
 
 ---
 
