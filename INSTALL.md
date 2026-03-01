@@ -42,7 +42,7 @@
   pip install git+https://github.com/XPixelGroup/BasicSR
   ```
 
-## 4. Install SAM2 lib. We use the modified version following LHM.
+## 4. Install SAM2 lib. We use the modified version following LHM
 ```bash
 pip install --no-build-isolation git+https://github.com/hitsz-zuoqi/sam2/
 
@@ -62,7 +62,7 @@ git clone https://github.com/camenduru/simple-knn.git
 pip install --no-build-isolation ./simple-knn
 ```
 
-## 6. Install [Pytorch3D](https://github.com/facebookresearch/pytorch3d).
+## 6. Install [Pytorch3D](https://github.com/facebookresearch/pytorch3d)
 ```bash
   # We used the following commands
   pip install --no-build-isolation "git+https://github.com/facebookresearch/pytorch3d.git" 

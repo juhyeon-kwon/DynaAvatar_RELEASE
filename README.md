@@ -36,37 +36,38 @@ To set up the environment, please refer to **[INSTALL.md](./INSTALL.md)** for st
 
 Follow these steps to download the required models and configure the project paths.
 
-#### **A. LHM Prior Model**
+#### **A. Download prior Models**
 Download the LHM prior weights and extract them:
 ```bash
 wget https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/aigc3d/data/LHM/LHM_prior_model.tar 
 tar -xvf LHM_prior_model.tar
-```
 
-#### **B. LHM Model Configuration**
-First, download the LHM model using the following script:
-```bash
+# Download pretrained LHM-500M
 python download.py
 ```
+
+#### **B. Update LHM Model Configuration**
 Next, you must manually update the configuration file located at:  
 `PATH/DynaAvatar_RELEASE/pretrained_models/Damo_XR_Lab/LHM-500M/step_060000/config.json`
 
-Add or modify these specific fields in the JSON file:
+Add these fields in the JSON file:
 ```json
 {
+    // ...
+
     "n_history_length": 15,
     "is_dynamic": true
 }
 ```
 
 #### **C. DynaAvatar Checkpoints**
-Download the DynaAvatar checkpoint and update the YAML configuration:
+Download the pretrained [DynaAvatar checkpoint](https://drive.google.com/drive/folders/1ypHIxlmAUUDRYIYZUNTTeoW3G84ge8hZ?usp=drive_link) and update the YAML configuration.
 * **Config Path**: `PATH/DynaAvatar_RELEASE/configs/inference/human-lrm-500M.yaml`
 * **Action**: Update the `saver.load_model` field to point to the absolute path of your downloaded checkpoint.
 
 #### **D. Additional Assets**
-* **Example Motion Sequences**: Download the sample motion sequences required for inference.
-* **Voxel Grid**: Ensure the voxel grid files are placed in:  
+* **Example Motion Sequences**: Download the [sample motion sequences](https://drive.google.com/drive/folders/1m7P2ErOKxp3JdcSTDWX2VjFwGTeZ6uhw?usp=drive_link) required for inference.
+* **Voxel Grid**: Download the [volume voxel grid](https://drive.google.com/drive/folders/1KvNgPfwdyecUrKKVaowa4-Tdk6gy2m0o?usp=drive_link). Ensure the voxel grid files are placed in:  
   `PATH/DynaAvatar_RELEASE/pretrained_models/volume_voxel_grid`
 
 ---

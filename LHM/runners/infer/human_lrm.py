@@ -413,51 +413,9 @@ class HumanLRMInferrer(Inferrer):
         if self.cfg.is_dynamic:
             successful_load = self.load_model_(os.path.join(cfg_train['saver'].load_model, 'model.safetensors'))
 
-            #from peft import PeftModel
-            #lora_adapter_path = os.path.join(cfg_train['saver'].load_model, "lora_adapter")
-            #print(f"[VCAI] ======== Loading LoRA Adapter from {lora_adapter_path} ========")
-            
-            #self.model = PeftModel.from_pretrained(self.model, lora_adapter_path)
-
-        
-
         self.motion_dict = dict()
 
-    # alt version
-    def __build_model(self, cfg):
-        from LHM.models import model_dict
-
-        hf_model_cls = wrap_model_hub(model_dict[self.EXP_TYPE])
-        model = hf_model_cls.from_pretrained(cfg.model_name)
-
-        if self.cfg.is_dynamic:
-            from peft import LoraConfig, get_peft_model
-            lora_target_modules_list = [
-                "to_q", "to_k", "to_v",
-                "add_q_proj", "add_k_proj", "add_v_proj",
-                "to_add_out",
-                "proj",
-                "linear"
-            ]
-            modules_to_save=[
-                    f"transformer.layers.{i}.dynamic_dit"
-                    for i, layer in enumerate(model.transformer.layers) if hasattr(layer, 'dynamic_dit')
-            ]
-            modules_to_save.append("fine_encoder")
-            modules_to_save.append("encoder")
-            
-            lora_config = LoraConfig(
-                r=32,
-                lora_alpha=64,
-                target_modules=lora_target_modules_list,  
-                lora_dropout=0.1,
-                bias="none",
-                modules_to_save=modules_to_save,
-            )
-
-            model = get_peft_model(model, lora_config)
-        
-        return model
+    
 
     # submission version: post-dynamic layers
     def _build_model(self, cfg):
@@ -494,58 +452,6 @@ class HumanLRMInferrer(Inferrer):
 
             model = get_peft_model(model, lora_config)
         
-        return model
-
-    # report params
-    def _____build_model(self, cfg):
-        from LHM.models import model_dict
-        from collections import defaultdict
-
-        hf_model_cls = wrap_model_hub(model_dict[self.EXP_TYPE])
-        model = hf_model_cls.from_pretrained(cfg.model_name)
-
-        if self.cfg.is_dynamic:
-            from peft import LoraConfig, get_peft_model
-            # ... (이전 lora_config 설정 동일) ...
-            lora_target_modules_list = ["to_q", "to_k", "to_v", "add_q_proj", "add_k_proj", "add_v_proj", "to_add_out", "proj", "linear"]
-            modules_to_save = [f"transformer.dynamic_layers.{i}.dynamic_dit" for i, layer in enumerate(model.transformer.dynamic_layers) if hasattr(layer, 'dynamic_dit')]
-            modules_to_save.extend(["fine_encoder", "encoder"])
-            
-            lora_config = LoraConfig(r=32, lora_alpha=64, target_modules=lora_target_modules_list, lora_dropout=0.1, bias="none", modules_to_save=modules_to_save)
-            model = get_peft_model(model, lora_config)
-        
-        # --- Depth 3 기준 파라미터 집계 ---
-        stats = defaultdict(lambda: {"total": 0, "trainable": 0})
-        depth_limit = 1
-        for name, param in model.named_parameters():
-            # 이름을 '.'으로 나누고 설정한 depth까지만 합침
-            parts = name.split('.')
-            group_name = ".".join(parts[:depth_limit])
-            
-            num = param.numel()
-            stats[group_name]["total"] += num
-            if param.requires_grad:
-                stats[group_name]["trainable"] += num
-
-        # 결과 출력
-        print(f"\n{'='*85}")
-        print(f"{'Module Path (Depth ' + str(depth_limit) + ')':<50} | {'Total':<15} | {'Trainable':<15}")
-        print(f"{'-'*85}")
-
-        total_all = 0
-        trainable_all = 0
-
-        for group, count in sorted(stats.items()):
-            print(f"{group:<50} | {count['total']:>15,} | {count['trainable']:>15,}")
-            total_all += count['total']
-            trainable_all += count['trainable']
-
-        print(f"{'-'*85}")
-        print(f"{'TOTAL SUM':<50} | {total_all:>15,} | {trainable_all:>15,}")
-        print(f"Trainable %: {100 * trainable_all / total_all:.4f}%")
-        print(f"{'='*85}\n")
-        exit()
-
         return model
 
     def _default_source_camera(

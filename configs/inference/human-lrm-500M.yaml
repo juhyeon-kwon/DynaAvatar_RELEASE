@@ -140,7 +140,7 @@ val:
 
 saver:
     auto_resume: True 
-    load_model: '/data3/exps/checkpoints/dynamic_avatar_ours/human-lrm-500M-dynamic/040000' #'/data/qw00n/LHM/pretrained_models/huggingface/models--3DAIGC--LHM-500M-HF/snapshots/dd6392905187a91fd67b3f6962aa74481e943764/model.safetensors'
+    load_model: '/data3/exps/checkpoints/dynamic_avatar_ours/human-lrm-500M-dynamic/040000' # UPDATE HERE !!!
     checkpoint_root: ./exps/checkpoints
     checkpoint_global_steps: 1000
     checkpoint_keep_level: 60 

@@ -466,8 +466,7 @@ class TransformerDecoder(nn.Module):
 
         return x
 
-# qw00n; conditioning motion cond alternately
-class _TransformerDecoder(nn.Module):
+
     """
     Transformer blocks that process the input and optionally use condition and modulation.
     """

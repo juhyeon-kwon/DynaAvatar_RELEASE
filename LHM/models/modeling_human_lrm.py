@@ -748,141 +748,6 @@ class ModelHumanLRMSapdinoBodyHeadSD3_5(ModelHumanLRM):
         
         return tokens, image_feats
 
-
-    def measure_transformer_latency(self, image, head_image, camera, query_points=None, motion_cond=None, pose_token=None, repetitions=100):
-        """
-        forward_transformer의 Latency를 정밀하게 측정합니다.
-        """
-        
-        # 1. 데이터 준비 (GPU 전송 등 측정 외적인 요소 배제)
-        with torch.no_grad():
-            # 사전 연산 (이 부분은 측정에서 제외)
-            image_feats, head_feats, body_feats = self.forward_encode_image(image, head_image)
-            global_context_token = self.forward_globalembed(body_feats)
-
-            # 2. Warm-up (GPU 커널 최적화 및 캐싱 유도)
-            print("Warming up...")
-            for _ in range(50):
-                _ = self.forward_transformer(
-                    image_feats,
-                    camera_embeddings=None,
-                    query_points=query_points,
-                    global_context_token=global_context_token,
-                    motion_cond=motion_cond,
-                    pose_token=pose_token
-                )
-            torch.cuda.synchronize() # 모든 비동기 연산 완료 대기
-
-            # 3. 실제 측정 루프
-            starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
-            timings = []
-
-            print(f"Measuring latency over {repetitions} iterations...")
-            for i in range(repetitions):
-                starter.record() # 시간 측정 시작
-                
-                # --- [측정 대상 코드] ---
-                tokens = self.forward_transformer(
-                    image_feats,
-                    camera_embeddings=None,
-                    query_points=query_points,
-                    global_context_token=global_context_token,
-                    motion_cond=motion_cond,
-                    pose_token=pose_token
-                )
-                # -----------------------
-                
-                ender.record() # 시간 측정 종료
-                torch.cuda.synchronize() # GPU 연산 완료 대기 (중요!)
-                
-                curr_time = starter.elapsed_time(ender) # 단위: ms
-                timings.append(curr_time)
-
-        # 4. 통계 계산
-        mean_latency = np.mean(timings)
-        std_latency = np.std(timings)
-        min_latency = np.min(timings)
-        max_latency = np.max(timings)
-        
-        print("-" * 30)
-        print(f"Forward Transformer Latency Results:")
-        print(f"Mean: {mean_latency:.4f} ms")
-        print(f"Std : {std_latency:.4f} ms")
-        print(f"Min : {min_latency:.4f} ms")
-        print(f"Max : {max_latency:.4f} ms")
-        print(f"FPS : {1000 / mean_latency:.2f} (Theoretical)")
-        print("-" * 30)
-
-        return mean_latency, std_latency
-
-
-    def measure_transformer_latency_lhm(self, image, head_image, camera, query_points=None, motion_cond=None, pose_token=None, repetitions=100):
-        
-        """
-        forward_transformer의 Latency를 정밀하게 측정합니다.
-        """
-        
-        # 1. 데이터 준비 (GPU 전송 등 측정 외적인 요소 배제)
-        with torch.no_grad():
-            # 사전 연산 (이 부분은 측정에서 제외)
-            image_feats, head_feats, body_feats = self.forward_encode_image(image, head_image)
-            global_context_token = self.forward_globalembed(body_feats)
-
-            # 2. Warm-up (GPU 커널 최적화 및 캐싱 유도)
-            print("Warming up...")
-            for _ in range(50):
-                _ = self.forward_transformer(
-                    image_feats.repeat(8, 1, 1),
-                    camera_embeddings=None,
-                    query_points=query_points.repeat(8, 1, 1),
-                    global_context_token=global_context_token.repeat(8, 1),
-                    motion_cond=motion_cond,
-                    pose_token=pose_token
-                )
-            torch.cuda.synchronize() # 모든 비동기 연산 완료 대기
-
-            # 3. 실제 측정 루프
-            starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
-            timings = []
-
-            print(f"Measuring latency over {repetitions} iterations...")
-            for i in range(repetitions):
-                starter.record() # 시간 측정 시작
-                
-                # --- [측정 대상 코드] ---
-                tokens = self.forward_transformer(
-                    image_feats.repeat(8, 1, 1),
-                    camera_embeddings=None,
-                    query_points=query_points.repeat(8, 1, 1),
-                    global_context_token=global_context_token.repeat(8, 1),
-                    motion_cond=motion_cond,
-                    pose_token=pose_token
-                )
-                # -----------------------
-                
-                ender.record() # 시간 측정 종료
-                torch.cuda.synchronize() # GPU 연산 완료 대기 (중요!)
-                
-                curr_time = starter.elapsed_time(ender) # 단위: ms
-                timings.append(curr_time)
-
-        # 4. 통계 계산
-        mean_latency = np.mean(timings)
-        std_latency = np.std(timings)
-        min_latency = np.min(timings)
-        max_latency = np.max(timings)
-        
-        print("-" * 30)
-        print(f"Forward Transformer Latency Results:")
-        print(f"Mean: {mean_latency:.4f} ms")
-        print(f"Std : {std_latency:.4f} ms")
-        print(f"Min : {min_latency:.4f} ms")
-        print(f"Max : {max_latency:.4f} ms")
-        print(f"FPS : {1000 / mean_latency:.2f} (Theoretical)")
-        print("-" * 30)
-
-        return mean_latency, std_latency
-
     def forward_fine_encode_image(self, image):
         # qw00n; training option
         if self.training and self.encoder_gradient_checkpointing:
@@ -967,8 +832,6 @@ class ModelHumanLRMSapdinoBodyHeadSD3_5(ModelHumanLRM):
             smplx_data=smplx_params,
             additional_features={"image_feats": image_feats, "image": image[:, 0]},
         )
-
-
 
         return gs_model_list, query_points, smplx_params['transform_mat_neutral_pose']
     
@@ -1088,13 +951,6 @@ class ModelHumanLRMSapdinoBodyHeadSD3_5(ModelHumanLRM):
             temb2=pose_token
         )  # [B, L, D]
 
-        # peak_vram = torch.cuda.max_memory_allocated() / 1024**3
-        # print(f"실제 사용된 피크 VRAM: {peak_vram:.4f} GB")
-
-        # # 현재 예약된 전체 메모리 (캐시 포함)
-        # reserved_vram = torch.cuda.memory_reserved() / 1024**3
-        # print(f"GPU가 예약한 전체 VRAM: {reserved_vram:.4f} GB")
-        # exit()
         return x
     
     # implemented by vcai
@@ -1248,118 +1104,11 @@ class ModelHumanLRMSapdinoBodyHeadSD3_5(ModelHumanLRM):
 
         return motion_tokens[:, :-1], motion_tokens[:, -1] # (B, T-1, 1024), (B, 1, 1024)
 
-    # old version
-    def _embed_dynamics(self, motion_history, smplx_params, is_infer=False):
-        #motion_history = motion_history.flip(1) # debug 1009
-
-        transls = motion_history[:, :, -1:, :] # B, T, 1, 3
-        motion_history = motion_history[:, :, :-1, :] # B, T, 55, 3
-        B, T, K, _ = motion_history.shape
-
-        # (1) rot 6
-        motion_history_6d = axis_angle_to_rotation_6d(motion_history) # [B, T, K, 3] -> [B, T, K, 6]
-
-        # (2) location 3
-        flattened_motion_history = motion_history.reshape(-1, K, 3)
-        if is_infer:
-            flattened_betas = smplx_params["betas"].expand(B, -1).unsqueeze(1).expand(-1, T, -1).reshape(-1, smplx_params["betas"].shape[-1])
-        else:
-            flattened_betas = smplx_params["betas"].unsqueeze(1).expand(-1, T, -1).reshape(-1, smplx_params["betas"].shape[-1])
-
-        output = self.renderer.smplx_model.smplx_layer(
-            global_orient=flattened_motion_history[:, 0:1, :],
-            body_pose=flattened_motion_history[:, 1:22, :].reshape(-1, 21 * 3),
-            left_hand_pose=flattened_motion_history[:, 25:40, :].reshape(-1, 15 * 3),
-            right_hand_pose=flattened_motion_history[:, 40:55, :].reshape(-1, 15 * 3),
-            jaw_pose=flattened_motion_history[:, 22:23, :].reshape(-1, 1 * 3),
-            leye_pose=flattened_motion_history[:, 23:24, :].reshape(-1, 1 * 3),
-            reye_pose=flattened_motion_history[:, 24:25, :].reshape(-1, 1 * 3),
-            expression=torch.zeros((B*T, self.renderer.smplx_model.smpl_x.expr_param_dim), device=flattened_betas.device),
-            betas=flattened_betas,
-            face_offset=None,
-            joint_offset=None,
-            transl = transls.reshape(-1, 3)
-        ) # [B*T, 144, 3]
-        joint_locations = output.joints[:, : self.renderer.smplx_model.smpl_x.joint_num, :].reshape(B, T, K, 3) # [B, T, K, 3]
-        
-        # (3) velocities 3
-        motion_history_rotmat = axis_angle_to_matrix(motion_history.reshape(-1, 3)).reshape(B, T, K, 3, 3)
-        current_poses_rotmat = motion_history_rotmat[:, 1:]    # (B, T-1, 55, 3, 3)
-        prev_poses_rotmat = motion_history_rotmat[:, :-1]   # (B, T-1, 55, 3, 3)
-
-        # Relative rotation: R_curr @ R_prev^T
-        relative_rotmat = torch.matmul(current_poses_rotmat, prev_poses_rotmat.transpose(-1, -2))
-        pose_velocities = matrix_to_axis_angle(relative_rotmat.reshape(-1, 3, 3)).reshape(B, T - 1, K, 3)
-        #transl_velocities = transls[:, 1:] - transls[:, :-1] # (B, T-1, 1, 3)
-        # (t=0) (zero: Padding)
-        zero_pose_vel = torch.zeros((B, 1, K, 3), device=motion_history.device, dtype=motion_history.dtype)
-        #zero_transl_vel = torch.zeros((B, 1, 1, 3), device=motion_history.device, dtype=motion_history.dtype)
-
-        full_pose_velocities = torch.cat([zero_pose_vel, pose_velocities], dim=1) # (B, T, 55, 3)
-        #full_transl_velocities = torch.cat([zero_transl_vel, transl_velocities], dim=1) # (B, T, 1, 3)
-        #full_pose_velocities[:, :, 0, :]=full_transl_velocities
-
-
-        # (4) acc 3
-        pose_velocities_rotmat = axis_angle_to_matrix(pose_velocities.reshape(-1, 3)).reshape(B, T - 1, K, 3, 3)
-        current_vel_rotmat = pose_velocities_rotmat[:, 1:]  # (B, T-2, K, 3, 3)
-        prev_vel_rotmat = pose_velocities_rotmat[:, :-1] # (B, T-2, K, 3, 3)
-
-        relative_accel_rotmat = torch.matmul(current_vel_rotmat, prev_vel_rotmat.transpose(-1, -2))
-        pose_accelerations = matrix_to_axis_angle(relative_accel_rotmat.reshape(-1, 3, 3)).reshape(B, T - 2, K, 3)
-        
-        #transl_accelerations = transl_velocities[:, 1:] - transl_velocities[:, :-1] # (B, T-2, 1, 3)
-        
-        zero_pose_accel = torch.zeros((B, 2, K, 3), device=motion_history.device, dtype=motion_history.dtype)
-        #zero_transl_accel = torch.zeros((B, 2, 1, 3), device=motion_history.device, dtype=motion_history.dtype)
-        full_pose_accelerations = torch.cat([zero_pose_accel, pose_accelerations], dim=1) # (B, T, K, 3)
-        #full_transl_accelerations = torch.cat([zero_transl_accel, transl_accelerations], dim=1) # (B, T, 1, 3)
-        
-        # (5) concat 6+3+3+3
-        combined_features = torch.cat(
-            [
-                motion_history_6d,         # 6D 회전
-                joint_locations,           # 3D 관절 위치
-                full_pose_velocities,      # 3D 포즈 속도
-                full_pose_accelerations    # 3D 포즈 가속도
-            ], 
-            dim=-1
-        ) # [B, T, 55, 15]
-
-        motion_history_features = combined_features[:, :, :22, :].reshape(B, T, -1) # [B, T, 22*15]
-
-        # (5) position embedding
-        motion_history_features_pos = self.positional_embedding(motion_history_features)
-
-        # (6) simple mlp projection
-        # layer normalization
-        motion_history_features_pos = self.norm_layer(motion_history_features_pos)
-        motion_tokens = self.motion_projection(motion_history_features_pos)
-
-        return motion_tokens[:, 1:], motion_tokens[:, 0] # (B, T-1, 1024), (B, 1, 1024)
-
-        #return motion_tokens[:, :-1], motion_tokens[:, -1] # debug 1009
-
     # implemented by vcai
     @torch.compile
     def forward_dynamic_transformer(
         self, image_feats, query_latents, motion_tokens, global_context_token, pose_token
     ):
-
-        '''
-        if self.latent_query_points_type == "embedding":
-            range_ = torch.arange(self.num_pcl, device=image_feats.device)
-            x = self.pcl_embeddings(range_).unsqueeze(0).repeat((B, 1, 1))  # [B, L, D]
-
-        elif self.latent_query_points_type.startswith("smplx"):
-            x = self.pcl_embed(self.pcl_embeddings.unsqueeze(0)).repeat(
-                (B, 1, 1)
-            )  # [B, L, D]
-
-        elif self.latent_query_points_type.startswith("e2e_smplx"): ## qw00n; this branch
-            # Linear warp -> MLP + LayerNorm
-            x = self.pcl_embed(query_points)  # [B, L, D]
-        '''
         
         x = self.dynamic_transformer.forward_dynamic(
             query_latents,
@@ -1470,7 +1219,6 @@ class ModelHumanLRMSapdinoBodyHeadSD3_5(ModelHumanLRM):
         lap_mean_mask = (
                     ((self.renderer.smplx_model.is_rhand + self.renderer.smplx_model.is_lhand + self.renderer.smplx_model.is_face_expr) > 0)
         )
-
 
         return {
             "latent_points": latent_points,

@@ -36,7 +36,7 @@ do
         "${LAST_ARG}"
         
     echo "Finished sequence: ${SEQ_ID}"
-    echo "" # 보기 편하게 한 줄 띄우기
+    echo "" #
 done
 
 echo "All inference tasks completed."
