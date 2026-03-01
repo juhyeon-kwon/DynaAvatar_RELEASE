@@ -78,26 +78,26 @@ Download the pretrained [DynaAvatar checkpoint](https://drive.google.com/drive/f
 Here are two examples using different motion sequences (e.g., DNA-Rendering and 4D-DRESS datasets). 
 
 #### **Example 1: DNA-Rendering sequence**
-%%%bash
+```bash
 CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
     /data1/qw00n/DynaAvatar_RELEASE/assets/novel_subject \
     /data3/jane/DNA_Rendering/DNA_Rendering_inference_seqs/0010_03/smplx/smplx_params_smooth \
     None 0 500 15
-%%%
+```
 
 #### **Example 2: 4D-DRESS sequence**
-%%%bash
+```bash
 CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
     /data1/qw00n/DynaAvatar_RELEASE/assets/novel_subject \
     /data3/jane/4D-DRESS/4D-DRESS/00137_outer_12/smplx/smplx_params_smooth \
     None 0 500 30
-%%%
+```
 
 ### Argument Breakdown
 To customize the command, refer to the following structure:
-%%%bash
+```bash
 bash inference.sh [MODEL_NAME] [SOURCE_IMAGE_DIR] [MOTION_PARAM_PATH] [BG_PATH] [START_FRAME] [MOTION_SIZE] [FPS]
-%%%
+```
 
 * **MODEL_NAME**: Name of the backbone model (e.g., `LHM-500M`).
 * **SOURCE_IMAGE_DIR**: Path to the folder containing source images.
