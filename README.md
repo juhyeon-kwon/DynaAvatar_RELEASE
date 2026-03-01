@@ -1,13 +1,6 @@
-# 💃 DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image
-
-## CVPR 2026
+# 💃 DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image (CVPR 2026)
 
 ### [[Project Page]](https://juhyeon-kwon.github.io/DynaAvatar.github.io/) | [[Paper]](#) | [[arXiv]](#) | [[Poster]](#) | [Video](#)
-
-**This is the official PyTorch implementation of the approach described in the following paper:**
-> **Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image**\
-> [Joohyun Kwon*], [Geonhee Sim*], and [Gyeongsik Moon†]\
-> IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2026
 
 ---
 
