@@ -5,7 +5,7 @@
 ### [[Project Page]](#) | [[Paper]](#) | [[arXiv]](#) | [[Poster]](#) | [Video](#)
 
 **This is the official PyTorch implementation of the approach described in the following paper:**
-> **DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image**\
+> **Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image**\
 > [Joohyun Kwon*], [Geonhee Sim*], and [Gyeongsik Moon†]\
 > IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2026
 
@@ -19,7 +19,7 @@ Existing single-image 3D human avatar methods primarily rely on rigid joint tran
 
 ## TODO List
 - [x] Release inference code
-- [] Release train code
+- [ ] Release train code
 - [ ] Release re-annotated datsets
 
 ---
@@ -37,7 +37,7 @@ To set up the environment, please refer to **[INSTALL.md](./INSTALL.md)** for st
 Follow these steps to download the required models and configure the project paths.
 
 #### **A. LHM Prior Model**
-Download the Large Human Model (LHM) prior weights and extract them:
+Download the LHM prior weights and extract them:
 ```bash
 wget https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/aigc3d/data/LHM/LHM_prior_model.tar 
 tar -xvf LHM_prior_model.tar
@@ -49,7 +49,7 @@ First, download the LHM model using the following script:
 python download.py
 ```
 Next, you must manually update the configuration file located at:  
-`/data1/qw00n/DynaAvatar_RELEASE/pretrained_models/Damo_XR_Lab/LHM-500M/step_060000/config.json`
+`PATH/DynaAvatar_RELEASE/pretrained_models/Damo_XR_Lab/LHM-500M/step_060000/config.json`
 
 Add or modify these specific fields in the JSON file:
 ```json
@@ -61,38 +61,32 @@ Add or modify these specific fields in the JSON file:
 
 #### **C. DynaAvatar Checkpoints**
 Download the DynaAvatar checkpoint and update the YAML configuration:
-* **Config Path**: `/data1/qw00n/DynaAvatar_RELEASE/configs/inference/human-lrm-500M.yaml`
+* **Config Path**: `PATH/DynaAvatar_RELEASE/configs/inference/human-lrm-500M.yaml`
 * **Action**: Update the `saver.load_model` field to point to the absolute path of your downloaded checkpoint.
 
 #### **D. Additional Assets**
 * **Example Motion Sequences**: Download the sample motion sequences required for inference.
 * **Voxel Grid**: Ensure the voxel grid files are placed in:  
-  `/data1/qw00n/DynaAvatar_RELEASE/pretrained_models/volume_voxel_grid`
+  `PATH/DynaAvatar_RELEASE/pretrained_models/volume_voxel_grid`
 
 ---
 
 ## 💻 Inference 
-Once the setup is complete, you can run the inference pipeline using the following command:
+Once the setup is complete, you can run the inference using the following command:
 
 ```bash
-python inference.py --configs ./configs/inference/human-lrm-500M.yaml
+CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M PATH/DynaAvatar_RELEASE/assets/novel_subject PATH_OF_MOTION_SEQS/smplx/smplx_params_smooth None 0 $MOTION_SIZE $FPS
 ```
 
 ---
 
 ## 🤝 Acknowledgement
-This work is built upon several amazing open-source projects: [4DGS](https://github.com/hustvl/4DGaussians), [LHM](https://github.com/modelscope/LHM), and others. We are grateful for their excellent contributions to the community.
+This work is built upon several amazing open-source projects: [PERSONA](https://github.com/mks0601/PERSONA_RELEASE), [LHM](https://github.com/aigc3d/LHM), and others. We are grateful for their excellent contributions to the community.
 
 ---
 
 ## 🔗 Citation
 If you find our work helpful, please cite:
 ```bibtex
-@InProceedings{Kwon_2025_CVPR,
-    author    = {Kwon, Joohyun and Cho, Hanbyel and Kim, Junmo},
-    title     = {DynaAvatar: Dynamic Human Avatar Synthesis with LHM Priors},
-    booktitle = {Proceedings of the Computer Vision and Pattern Recognition Conference (CVPR)},
-    month     = {June},
-    year      = {2025}
-}
+
 ```

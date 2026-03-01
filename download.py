@@ -4,4 +4,4 @@ from modelscope import snapshot_download
 # 500M-HF Model
 model_dir = snapshot_download(model_id='Damo_XR_Lab/LHM-500M', cache_dir='./pretrained_models')
 # 1B-HF Model
-model_dir = snapshot_download(model_id='Damo_XR_Lab/LHM-1B', cache_dir='./pretrained_models')
+#model_dir = snapshot_download(model_id='Damo_XR_Lab/LHM-1B', cache_dir='./pretrained_models')
