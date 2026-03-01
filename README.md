@@ -93,8 +93,7 @@ CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
     None 0 500 30
 ```
 
-### Argument Breakdown
-To customize the command, refer to the following structure:
+### Arguments
 ```bash
 bash inference.sh [MODEL_NAME] [SOURCE_IMAGE_DIR] [MOTION_PARAM_PATH] [BG_PATH] [START_FRAME] [MOTION_SIZE] [FPS]
 ```
@@ -104,6 +103,9 @@ bash inference.sh [MODEL_NAME] [SOURCE_IMAGE_DIR] [MOTION_PARAM_PATH] [BG_PATH] 
 * **MOTION_PARAM_PATH**: Path to the SMPL-X motion parameters.
 * **MOTION_SIZE**: Maximum number of frames to render (e.g., `300`).
 * **FPS**: Frames per second (e.g., `15` or `30`).
+
+### Note
+If you encounter VRAM issues, please adjust the `batch_size` in `DynaAvatar_RELEASE/LHM/runners/infer/human_lrm.py` at line 969.
 
 ---
 

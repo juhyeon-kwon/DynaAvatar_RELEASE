@@ -966,7 +966,7 @@ class HumanLRMInferrer(Inferrer):
         
         batch_list = [] 
         if self.cfg.is_dynamic:
-            batch_size = 8 
+            batch_size = 8 # CONTROL HERE
         else:
             batch_size = 40 # avoid memeory out!
 
