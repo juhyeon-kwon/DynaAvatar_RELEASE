@@ -8,13 +8,13 @@
 
 <br> <img src="assets/sota_comparison_highlighted.gif" width="90%">
 
-<br> </div>
+</div>
 
 ---
 
 ## TODO
 - [x] Release inference code
-- [ ] Release train code
+- [x] Release train code
 - [ ] Release re-annotated datasets
 
 ---
