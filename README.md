@@ -1,7 +1,12 @@
-# 💃 DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image (CVPR 2026)
+<p align="center">
+  <h1>💃 DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image (CVPR 2026)</h1>
+</p>
 
-### [[Project Page]](https://juhyeon-kwon.github.io/DynaAvatar.github.io/) | [[Paper]](#) | [[arXiv]](#) | [[Poster]](#) | [Video](#)
-
+<p align="center">
+  <a href="https://juhyeon-kwon.github.io/DynaAvatar.github.io/"><strong>[Project Page]</strong></a> | 
+  <a href="#"><strong>[Paper]</strong></a> | 
+  <a href="#"><strong>[arXiv]</strong></a> | 
+</p>
 ---
 
 ## Abstract
@@ -97,17 +102,19 @@ bash inference.sh [MODEL_NAME] [SOURCE_IMAGE_DIR] [MOTION_PARAM_PATH] [BG_PATH] 
 * **MOTION_SIZE**: Maximum number of frames to render (e.g., `300`).
 * **FPS**: Frames per second (e.g., `15` or `30`).
 
-### Note
-If you encounter VRAM issues, please adjust the `batch_size` in `DynaAvatar_RELEASE/LHM/runners/infer/human_lrm.py` at line 969.
-
+> 💡 **Note:** If you encounter VRAM issues, please adjust the `batch_size` in [`DynaAvatar_RELEASE/LHM/runners/infer/human_lrm.py`](#) at line **969**.
 ---
 
-## 🤝 Acknowledgement
+## 🕺 Training 
+Training code is now available; a detailed guide is currently under preparation.
+---
+
+## Acknowledgement
 This work is built upon several amazing open-source projects: [PERSONA](https://github.com/mks0601/PERSONA_RELEASE), [LHM](https://github.com/aigc3d/LHM), and others. We are grateful for their excellent contributions to the community.
 
 ---
 
-## 🔗 Citation
+## Citation
 If you find our work helpful, please cite:
 ```bibtex
 
