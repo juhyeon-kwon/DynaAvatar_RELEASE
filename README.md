@@ -1,13 +1,10 @@
 <div align="center">
 
-# 💃 DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image (CVPR 2026)
+<img src="assets/dynaavatar_logo.png" width="200">
+
+# DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image (CVPR 2026)
 
 [**[Project Page]**](https://juhyeon-kwon.github.io/DynaAvatar.github.io/) | [**[Paper]**](#) | [**[arXiv]**](#)
-
-<br> DynaAvatar enables high-quality 3D avatar animation with realistic cloth dynamics from a single image.
-
-<br> <img src="assets/sota_comparison_highlighted.gif" width="90%">
-
 </div>
 
 ---
