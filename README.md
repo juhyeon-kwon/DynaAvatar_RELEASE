@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/dynaavatar_logo.png" width="200">
+<img src="assets/dynaavatar_logo.png" width="300">
 
 # DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image (CVPR 2026)
 
