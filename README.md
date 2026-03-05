@@ -1,8 +1,7 @@
 <div align="center">
 
-<img src="assets/dynaavatar_logo_r.png" width="130">
-
-<h1 style="margin-top: -15px; margin-bottom: 10px;">
+<h1>
+  <img src="assets/dynaavatar_logo_r.png" width="80" style="vertical-align: middle; margin-right: 10px; margin-bottom: 8px;">
   DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image <br> (CVPR 2026)
 </h1>
 
