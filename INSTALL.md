@@ -64,8 +64,8 @@ pip install --no-build-isolation ./simple-knn
 
 ## 6. Install [Pytorch3D](https://github.com/facebookresearch/pytorch3d)
 ```bash
-  # We used the following commands
-  pip install --no-build-isolation "git+https://github.com/facebookresearch/pytorch3d.git" 
+# We used the following commands
+pip install --no-build-isolation "git+https://github.com/facebookresearch/pytorch3d.git" 
 ```
 
 ## 7. Install [LightGlue](https://github.com/cvg/LightGlue)

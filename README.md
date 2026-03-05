@@ -3,7 +3,7 @@
 
 # DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image <br> (CVPR 2026)
 
-[**[Project Page]**](https://juhyeon-kwon.github.io/DynaAvatar.github.io/) | [**[Paper]**](#) | [**[arXiv]**](#)
+[**[Project Page]**](https://juhyeon-kwon.github.io/DynaAvatar.github.io/)  |  [**[Paper]**](#)  |  [**[arXiv]**](#)
 </div>
 
 ---
@@ -98,9 +98,14 @@ bash inference.sh [MODEL_NAME] [SOURCE_IMAGE_DIR] [MOTION_PARAM_PATH] [BG_PATH] 
 > 💡 **Note:** If you encounter VRAM issues, please adjust the `batch_size` in [`DynaAvatar_RELEASE/LHM/runners/infer/human_lrm.py`](https://github.com/juhyeon-kwon/DynaAvatar_RELEASE/blob/4f5f372a987deb3aa8d8f2ee2fb900361b1df9dd/LHM/runners/infer/human_lrm.py#L969C1-L970C1) at line **969**.
 ---
 
+## 📁 Reannotated Datasets
+You can download our datasets [here]().
+
+---
+
 ## 🕺 Training 
 Training code is now available; a detailed guide is currently under preparation.
-
+(update PATH at config/yaml, bash sh config)
 ---
 
 ## Acknowledgement

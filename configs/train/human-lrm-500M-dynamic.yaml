@@ -2,7 +2,7 @@
 experiment:
     type: lrm
     seed: 42
-    parent: dynamic_avatar_rebuttal_R2-1_a #!#
+    parent: dynamic_avatar #!#
     child: human-lrm-500M-dynamic
 model:
     # image encoder
