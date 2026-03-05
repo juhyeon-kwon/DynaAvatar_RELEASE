@@ -1,9 +1,8 @@
 <div align="center">
 
-<h1>
-  <img src="assets/dynaavatar_logo_r.png" width="80" style="vertical-align: middle; margin-right: 10px;">
-  DynaAvatar: Zero-Shot Reconstruction of<br> Animatable 3D Avatars with Cloth Dynamics<br> from a Single Image <br> (CVPR 2026)
-</h1>
+<img src="assets/dynaavatar_logo_r.png" width="130" style="margin-bottom: -30px;">
+
+# DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image <br> (CVPR 2026)
 
 [**[Project Page]**](https://juhyeon-kwon.github.io/DynaAvatar.github.io/) | [**[Paper]**](#) | [**[arXiv]**](#)
 </div>
