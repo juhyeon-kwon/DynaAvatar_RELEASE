@@ -168,76 +168,6 @@ class HumanLRMTrainer(Trainer):
 
         return lora_model
         
-    # 1201: alternative version for texture test
-    def __build_model(self, cfg):
-        from LHM.models import model_dict
-
-        # start from pretrained LHM
-        hf_model_cls = wrap_model_hub(model_dict[self.EXP_TYPE])
-        model = hf_model_cls.from_pretrained(cfg.model_name)
-
-        # qw00n; freeze LHM
-        print('[VCAI] ======== Freezing LHM static Model ========')
-        for param in model.parameters():
-            param.requires_grad = False
-
-        if hasattr(model, 'transformer') and hasattr(model.transformer, 'layers'):
-            for block in model.transformer.layers:
-                if hasattr(block, 'dynamic_dit'):
-                    for param in block.dynamic_dit.parameters():
-                        param.requires_grad = True
-        
-        # qw00n; LoRA finetuning
-        print('[VCAI] ======== Build LoRA Model ========')
-        lora_target_modules_list = [
-            "to_q", "to_k", "to_v",
-            "add_q_proj", "add_k_proj", "add_v_proj",
-            "to_add_out",
-            "proj",
-            "linear"
-        ]
-        modules_to_save=[
-                f"transformer.layers.{i}.dynamic_dit"
-                for i, layer in enumerate(model.transformer.layers) if hasattr(layer, 'dynamic_dit')
-            ]
-        modules_to_save.append("fine_encoder")
-        modules_to_save.append("encoder")
-        
-        lora_config = LoraConfig(
-            r=32,
-            lora_alpha=64,
-            target_modules=lora_target_modules_list,  
-            lora_dropout=0.1,
-            bias="none",
-            modules_to_save=modules_to_save,
-        )
-
-        lora_model = get_peft_model(model, lora_config)
-
-        print("[VCAI] Re-freezing modules intended to be fully frozen...")
-        modules_to_force_freeze = ['fine_encoder', 'encoder']
-        for name, param in lora_model.named_parameters():
-            for module_name in modules_to_force_freeze:
-                if f'base_model.model.{module_name}' in name:
-                    param.requires_grad = False
-                    break 
-
-        trainable_modules_names = [
-            'norm_layer',
-            'motion_projection',
-            'renderer' # gs decoder
-        ]
-        
-        for name, module in lora_model.named_modules():
-            if any(module_name in name for module_name in trainable_modules_names):
-                for param in module.parameters():
-                    param.requires_grad = True
-
-        lora_model.print_trainable_parameters()
-
-        return lora_model
-
-
     # qw00n; copied from OpenLRM
     def _build_optimizer(self, model: nn.Module, cfg):
         decay_params, no_decay_params = [], []
@@ -346,8 +276,6 @@ class HumanLRMTrainer(Trainer):
             raise NotImplementedError(f"Scheduler type {cfg.train.scheduler.type} not implemented")
         return scheduler
         
-    # qw00n; have to check Heuristic ASAP_Loss, ACAP_Loss
-    # qw00n; have to implement additional loss func if needed
     def _build_loss_fn(self, cfg):
         from LHM.losses import ASAP_Loss, ACAP_Loss, LPIPSLoss, PixelLoss, TVLoss, WanVAELoss, LaplacianRegLoss, FeatureMatchingLoss
         pixel_loss_fn = PixelLoss(option='l1')
@@ -413,7 +341,7 @@ class HumanLRMTrainer(Trainer):
             
             s = value.shape
             
-            # 뷰 종속 데이터 (B, T, V, ...) -> (B*T, V, ...)
+            # (B, T, V, ...) -> (B*T, V, ...)
             if len(s) >= 3 and s[0] == B and s[1] == T and s[2] == V:
                 new_shape = (-1, V, *s[3:])
                 if isinstance(value, torch.Tensor):
@@ -421,7 +349,7 @@ class HumanLRMTrainer(Trainer):
                 else: 
                     data[key] = value.reshape(new_shape)
             
-            # 뷰 독립 데이터 (B, T, ...) -> (B*T, ...)
+            # (B, T, ...) -> (B*T, ...)
             elif len(s) >= 2 and s[0] == B and s[1] == T:
                 new_shape = (-1, *s[2:])
                 if isinstance(value, torch.Tensor):
@@ -459,36 +387,6 @@ class HumanLRMTrainer(Trainer):
         )
         # ['latent_points', 'offset_output', 'scaling_output', 'comp_rgb', 'comp_rgb_bg', 'comp_mask', 'comp_depth', '3dgs']
 
-
-        # debug
-        '''
-        smplx_params = {
-                'root_pose':  data['target_pose'][:,0:1],         
-                'body_pose':  data['target_pose'][:,1:22].unsqueeze(1),       
-                'jaw_pose':   data['target_pose'][:,22:23],       
-                'leye_pose':  data['target_pose'][:,23:24],       
-                'reye_pose':  data['target_pose'][:,24:25],       
-                'lhand_pose': data['target_pose'][:,25:40].unsqueeze(1),     
-                'rhand_pose': data['target_pose'][:,40:55].unsqueeze(1),      
-                
-                'expr':       torch.zeros_like(data['target_betas']), 
-                'trans':      data['target_transl'].unsqueeze(1),     # [B*T, 1, 3]
-                
-                'betas':      data['target_betas'],      
-            },
-        '''
-
-
-        '''
-        # (B*T, V, 3, H, W) -> (3, H, W)
-        # 예: 2번째 배치, 0번째 뷰
-        single_rgb_image = outputs['comp_rgb'][2, 0] 
-        rgb_image_np = (single_rgb_image.permute(1, 2, 0).detach().cpu().numpy() * 255).astype(np.uint8)
-        rgb_image_bgr = cv2.cvtColor(rgb_image_np, cv2.COLOR_RGB_BGR)
-        cv2.imwrite("debug_rgb.png", rgb_image_bgr)
-        print("RGB Saved: debug_rgb.png")
-        '''
-        
         return outputs
     
     # implemented by vcai   
@@ -509,7 +407,6 @@ class HumanLRMTrainer(Trainer):
                 # 1. Forward & calc loss
                 outputs = self.forward_train(data) # in this function, B, F -> B*F
                 
-                # TODO: collect all loss calculations into unified function
                 gt_image = data['gt_img'] * data['gt_mask'] + (1.0 - data['gt_mask'])
 
                 rgb_loss = self.pixel_loss_fn(outputs['comp_rgb'], gt_image)
@@ -518,7 +415,6 @@ class HumanLRMTrainer(Trainer):
                 
                 lpips_loss = self.perceptual_loss_fn(outputs['comp_rgb'], gt_image)
 
-                
 
                 acap_loss = self.acap_loss_fn(outputs['hand_offset_output']) * 50
 
@@ -529,14 +425,14 @@ class HumanLRMTrainer(Trainer):
                 lap_rotation_loss = self.lap_loss_fn(outputs['rotation_output'], None).mean() * 100
 
                 # qw00n; only for hand, face
-                lap_mean_loss = self.lap_loss_fn(outputs['query_points'] + outputs['offset_output'], outputs['query_points'])[:, outputs['lap_mean_mask']].mean() * 100 * 10
+                lap_mean_loss = self.lap_loss_fn(outputs['query_points'] + outputs['offset_output'], outputs['query_points'])[:, outputs['lap_mean_mask']].mean() * 1000
 
                 # qw00n;
                 #video_vae_loss = self.video_vae_loss_fn(outputs['comp_rgb'].reshape(B, T, V, C, H, W), gt_image.reshape(B, T, V, C, H, W)) * 0.5 * 0
                     
                 # qw00n;
                 if self.global_step > 20000:
-                    glue_loss = self.glue_loss_fn(outputs['comp_rgb'], gt_image, outputs['proj_comp_rgb'], outputs['proj_comp_mask']) * 0.1 * 1
+                    glue_loss = self.glue_loss_fn(outputs['comp_rgb'], gt_image, outputs['proj_comp_rgb'], outputs['proj_comp_mask']) * 0.1
                 else:
                     glue_loss = torch.tensor(0.0, device=self.device, requires_grad=True)
 

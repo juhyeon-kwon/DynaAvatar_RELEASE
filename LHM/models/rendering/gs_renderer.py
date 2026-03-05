@@ -1497,30 +1497,11 @@ class GS3DRenderer(nn.Module):
 
     # qw00n
     def project_points(self, xyz, c2w, intrinsic, height, width):
-        """
-        3DGS 파이프라인과 일치하도록 3D 포인트를 2D 이미지로 투영합니다.
-
-        Args:
-            xyz: (N, 3) 월드 좌표계의 3D 포인트
-            c2w: (1, 4, 4) Camera-to-World 행렬 (OpenCV/COLMAP 규약)
-            intrinsic: (1, 3, 3) OpenCV 스타일 카메라 내부 행렬 (원점: 좌상단)
-            height: 이미지 높이
-            width: 이미지 너비
-        
-        Returns:
-            uv: (N, 2) 픽셀 좌표 (원점: 좌상단)
-            depth: (N,) 카메라 공간의 Z 깊이 값
-        """
-
-        # --- 1. 3DGS 규약에 맞게 Intrinsic 변환 ---
-        # 렌더링 루프에서 사용한 로직과 동일하게 적용
         intrinsic_cv = intrinsic.squeeze(0)
         intrinsic_for_3dgs = intrinsic_cv.clone()
         intrinsic_for_3dgs[1, 2] = height - intrinsic_cv[1, 2] # cy_new = height - cy_old
         intrinsic_for_3dgs[0, 2] = width - intrinsic_cv[0, 2]  # cx_new = width - cx_old
 
-        # 렌더링 루프와 동일한 방식으로 Camera 객체를 생성합니다.
-        # c2w는 (1, 4, 4), intrinsic_for_3dgs는 (3, 3)을 전달합니다.
         viewpoint_camera = Camera.from_c2w(
             c2w.squeeze(0), 
             intrinsic_for_3dgs, 
@@ -1528,19 +1509,14 @@ class GS3DRenderer(nn.Module):
             int(width)
         )
 
-        # --- 3. World -> Clip Space 변환 ---
-        # (P @ V).T 행렬을 가져옵니다.
         full_proj = viewpoint_camera.full_proj_transform  # (4, 4)
-
-        # 동차 좌표(homogeneous coordinates)로 만듭니다.
+        # homogeneous coordinates
         ones = torch.ones(xyz.shape[0], 1, device=xyz.device, dtype=xyz.dtype)
         xyz_h = torch.cat([xyz, ones], dim=1)           # (N, 4)
 
         # p_clip = p_world @ (P @ V).T
         xyz_clip_h = xyz_h @ full_proj                  # (N, 4)
 
-        # --- 4. 원근 나누기 (Clip -> NDC) ---
-        # w_clip은 카메라 좌표계의 z값(depth)과 같습니다.
         w = xyz_clip_h[:, 3].unsqueeze(-1) + 1e-9       # (N, 1)
 
         # NDC(Normalized Device Coordinates)
@@ -1548,14 +1524,11 @@ class GS3DRenderer(nn.Module):
         # y: [-1, 1] (top to bottom)
         xyz_ndc = xyz_clip_h[:, :3] / w                 # (N, 3)
 
-        # --- 5. 깊이(Depth) 계산 ---
-        # V.T (w2c.T) 행렬을 가져옵니다.
         viewmatrix = viewpoint_camera.world_view_transform
         # p_cam = p_world @ V.T
         xyz_cam_h = xyz_h @ viewmatrix
         depth = xyz_cam_h[:, 2]                         # (N,)
 
-        # --- 6. NDC -> 픽셀 좌표 변환 ---
         ndc_x = xyz_ndc[:, 0]
         ndc_y = xyz_ndc[:, 1]
 

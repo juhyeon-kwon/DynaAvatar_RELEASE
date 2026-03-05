@@ -105,7 +105,7 @@ You can download our datasets [here]().
 
 ## 🕺 Training 
 Training code is now available; a detailed guide is currently under preparation.
-<br>(update PATH at config/yaml, bash sh config)
+<br>(update PATH at config/yaml, bash train_dynaavatar.sh config)
 
 ---
 

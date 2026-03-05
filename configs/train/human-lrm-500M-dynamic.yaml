@@ -82,31 +82,6 @@ dataset:
             src_head_size: 112
             n_history_length: 15
 
-        # -   name: dna_rendering
-        #     root_dirs: "/data3/jane/DNA_Rendering/DNA_Rendering_tar_face_targ_added" #"/data/jane/DNA_Rendering/DNA_Rendering_Part 2_tar" #"/data/DNA_Rendering/DNA_Rendering"
-        #     meta_path:
-        #         train: "/data3/jane/DNA_Rendering/rebuttal_part1_part2_filtered.json"  #"/data/DNA_Rendering/part1_part2_filtered.json"
-        #         val: "/data3/jane/DNA_Rendering/rebuttal_part1_part2_filtered.json"
-        #     sample_rate: 1.0
-        #     fps: 15
-        #     use_flame: True 
-        #     src_head_size: 112
-        #     n_history_length: 15 # qw00n;
-
-        # -   name: 4d_dress
-        #     root_dirs: "/data3/jane/4D-DRESS/4D-DRESS_rebuttal_tar_face_targ_added"
-        #     meta_path:
-        #         train: "/data1/qw00n/LHM/configs/train/no_interaction_subject_ids_4d_learnable_except_cloth_eval.json"
-        #         val: "/data1/qw00n/LHM/configs/train/no_interaction_subject_ids_4d_learnable_except_cloth_eval.json"
-        #     sample_rate: 1.0
-        #     fps: 30
-        #     use_flame: True 
-        #     src_head_size: 112
-        #     n_history_length: 15
-
-
-
-
   sample_side_views: 5 
   source_image_res: 1024 
   src_head_size: 112
@@ -170,7 +145,7 @@ val:
     debug_batches: 10
 
 saver:
-    auto_resume: True # qw00n; True if resume 
+    auto_resume: False # qw00n; True if resume 
     load_model: '/data1/qw00n/LHM/pretrained_models/huggingface/models--3DAIGC--LHM-500M/snapshots/7b9c7036404f9c21d8c4891ee4053e58c6ca2427/model.safetensors' #'/data/qw00n/LHM/exps/checkpoints/dynamic_avatar/human-lrm-500M-dynamic/060000'
     checkpoint_root: /data3/exps/checkpoints
     checkpoint_global_steps: 1000 # checkpoint saving period; original: 1000
@@ -185,7 +160,7 @@ logger:
     trackers:
         - tensorboard
     image_monitor:
-        train_global_steps: 10 # 100
+        train_global_steps: 100 # 100
         samples_per_log: 4
 
 compile:
