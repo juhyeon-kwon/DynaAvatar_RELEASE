@@ -71,7 +71,7 @@ Here are two examples using different motion sequences (e.g., DNA-Rendering and 
 #### **Example 1: DNA-Rendering sequence**
 ```bash
 CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
-    /data1/qw00n/DynaAvatar_RELEASE/assets/novel_subject \
+    PATH/DynaAvatar_RELEASE/assets/novel_subject \
     PATH/motion_seqs/DNA_Rendering/0124_03/smplx/smplx_params_smooth \
     None 0 500 15
 ```
@@ -79,7 +79,7 @@ CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
 #### **Example 2: 4D-DRESS sequence**
 ```bash
 CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
-    /data1/qw00n/DynaAvatar_RELEASE/assets/novel_subject \
+    PATH/DynaAvatar_RELEASE/assets/novel_subject \
     PATH/motion_seqs/4D-DRESS/00152_outer_16/smplx/smplx_params_smooth \
     None 0 500 30
 ```
