@@ -3,7 +3,7 @@
 
 # DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image <br> (CVPR 2026)
 
-[**[Project Page]**](https://juhyeon-kwon.github.io/DynaAvatar.github.io/)  |  [**[Paper]**](#)  |  [**[arXiv]**](#)
+[**[Project Page]**](https://juhyeon-kwon.github.io/DynaAvatar.github.io/)  |  [**[Paper]**](#)  |  [**[arXiv]**](#)  |  [**[Video]**](https://www.youtube.com/watch?v=50e8RyGcxwc)
 </div>
 
 ---
