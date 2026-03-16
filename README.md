@@ -117,5 +117,10 @@ This work is built upon several amazing open-source projects: [PERSONA](https://
 ## Citation
 If you find our work helpful, please cite:
 ```bibtex
-
+@inproceedings{kwon2026dynavatar,
+  title={Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image},
+  author={Kwon, Joohyun and Sim, Geonhee and Moon, Gyeongsik},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year={2026}
+}
 ```
