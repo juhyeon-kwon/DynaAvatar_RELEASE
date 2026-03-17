@@ -3,7 +3,7 @@
 
 # DynaAvatar: Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image <br> (CVPR 2026)
 
-[**[Project Page]**](https://juhyeon-kwon.github.io/DynaAvatar.github.io/)  |  [**[Paper]**](#)  |  [**[arXiv]**](#)
+[**[Project Page]**](https://juhyeon-kwon.github.io/DynaAvatar.github.io/)  |  [**[Paper]**](#)  |  [**[arXiv]**](#)  |  [**[Video]**](https://www.youtube.com/watch?v=50e8RyGcxwc)
 </div>
 
 ---
@@ -131,8 +131,25 @@ You can download our datasets [here]().
 ---
 
 ## 🕺 Training 
-Training code is now available; but a detailed guide is currently under preparation.
+### 1. Configuration Setup
+Before starting, you need to update the configuration files with your local environment settings:
 
+#### 1.1 Set Data Paths
+Open ```PATH/DynaAvatar_RELEASE/configs/train/human-lrm-500M-dynamic.yaml```. Use ```Ctrl+F``` to find all occurrences of ```PATH``` and replace them with your actual absolute project path.
+
+#### 1.2 Adjust Multi-GPU Settings
+In ```PATH/DynaAvatar_RELEASE/configs/accelerate-train.yaml```, modify the ```num_processes``` value according to the number of GPUs you intend to use.
+
+#### 1.3 Select Target GPUs
+Open ```PATH/DynaAvatar_RELEASE/train_dynaavatar.sh``` and set the ```CUDA_VISIBLE_DEVICES``` to the specific GPU IDs you wish to allocate for training.
+
+
+### 2. Run Training
+Once the configuration is complete, you can simply launch the training with the following command:
+
+```bash
+bash train_dynaavatar.sh
+```
 ---
 
 ## Acknowledgement
@@ -143,5 +160,10 @@ This work is built upon several amazing open-source projects: [PERSONA](https://
 ## Citation
 If you find our work helpful, please cite:
 ```bibtex
-
+@inproceedings{kwon2026dynavatar,
+  title={Zero-Shot Reconstruction of Animatable 3D Avatars with Cloth Dynamics from a Single Image},
+  author={Kwon, Joohyun and Sim, Geonhee and Moon, Gyeongsik},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year={2026}
+}
 ```
