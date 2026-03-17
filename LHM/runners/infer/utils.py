@@ -603,7 +603,7 @@ def prepare_motion_seqs_2(
     motion_seqs = motion_seqs[motion_st_idx:motion_st_idx+motion_size]
 
     # source images
-    c2ws, intrs, rgbs, bg_colors, masks = [], [], [], [], []
+    c2ws, intrs, rgbs, bg_colors = [], [], [], []
     smplx_params = []
     shape_param = None
 
@@ -622,25 +622,15 @@ def prepare_motion_seqs_2(
                 if "pad_ratio" not in k
             }            
 
-        #if idx == 0:
-        #    shape_param = smplx_param["betas"]
-
-        #c2w, intrinsic = _load_pose(smplx_param)
-        #intrinsic_raw = intrinsic.clone()
-        
-
         flame_path = smplx_path.replace("smplx_params", "flame_params")
-        #smplx_param["expr"] = torch.FloatTensor([0.0] * 100)
-
-        #smplx_param["expr"] = torch.FloatTensor([0.0] * 100)
         _expr = torch.zeros(100)
-        _expr[:smplx_param["expr"].shape[0]] = smplx_param["expr"]
+        if 'expr' in smplx_param: 
+            _expr[:smplx_param["expr"].shape[0]] = smplx_param["expr"]
         smplx_param["expr"] = _expr
 
         c2ws.append(c2w)
         bg_colors.append(bg_color)
         intrs.append(intrinsic)
-        # intrs.append(intrinsic_raw)
         smplx_params.append(smplx_param)
 
     c2ws = torch.stack(c2ws, dim=0)  # [N, 4, 4]
@@ -651,7 +641,6 @@ def prepare_motion_seqs_2(
 
     if len(rgbs) > 0:
         rgbs = torch.cat(rgbs, dim=0)  # [N, 3, H, W]
-        # masks = torch.cat(masks, dim=0)  # [N, 1, H, W]
 
     smplx_params_tmp = defaultdict(list)
     for smplx in smplx_params:
@@ -660,9 +649,6 @@ def prepare_motion_seqs_2(
     for k, v in smplx_params_tmp.items():
         smplx_params_tmp[k] = torch.stack(v)  # [Nv, xx, xx]
     smplx_params = smplx_params_tmp
-    
-    # TODO check different betas for same person
-    #smplx_params["betas"] = shape_param # qw00n; useless
 
     motion_render = None
 

@@ -69,6 +69,9 @@ pip install --no-build-isolation "git+https://github.com/facebookresearch/pytorc
 ```
 
 ## 7. Install [LightGlue](https://github.com/cvg/LightGlue)
-
+```bash
+# We used the following commands
+pip install --no-build-isolation "git+https://github.com/cvg/LightGlue.git"
+```
 
 

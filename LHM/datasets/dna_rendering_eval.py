@@ -38,9 +38,6 @@ from LHM.runners.infer.utils import (
 )
 import math
 from tqdm import tqdm
-########## debugging
-'''(디버깅 코드 생략)'''
-#############
 
 def scale_intrs(intrs: np.ndarray, ratio_x, ratio_y) -> np.ndarray:  # (B,...)
     intrs[:, 0] = intrs[:, 0] * ratio_x
@@ -69,15 +66,11 @@ def center_crop_pad_according_to_mask(img: np.ndarray, mask: np.ndarray, aspect_
     x1 = x0 + need_w
     y1 = y0 + need_h
     
-    '''(주석 처리된 코드 생략)'''
-
-    # 이미지 바깥으로 나간 만큼 패딩 필요량
     pad_left   = max(0, -x0)
     pad_top    = max(0, -y0)
     pad_right  = max(0,  x1 - W)
     pad_bottom = max(0,  y1 - H)
 
-    # 실제로 잘라낼 영역(이미지 내부 교집합)
     crop_x0 = max(0, x0)
     crop_y0 = max(0, y0)
     crop_x1 = min(W, x1)
@@ -86,7 +79,6 @@ def center_crop_pad_according_to_mask(img: np.ndarray, mask: np.ndarray, aspect_
     patch_img  = img [crop_y0:crop_y1, crop_x0:crop_x1]
     patch_mask = mask[crop_y0:crop_y1, crop_x0:crop_x1]
 
-    # 패딩으로 목표 크기 정확히 맞추기 (좌/상 우/하)
     patch_img  = cv2.copyMakeBorder(
         patch_img, pad_top, pad_bottom, pad_left, pad_right,
         borderType=cv2.BORDER_CONSTANT, value=0.0
@@ -107,7 +99,7 @@ def center_crop_pad_according_to_mask(img: np.ndarray, mask: np.ndarray, aspect_
 __all__ = ['DNARenderingDataset']
 
 # -----------------------------
-# LRU (SMPLX/핸들 캐시에 사용)
+# LRU (SMPLX/handle cache)
 # -----------------------------
 class LRU:
     def __init__(self, capacity: int = 512):
@@ -134,43 +126,34 @@ class DNARenderingDataset(BaseDataset):
                  n_history_length : int, 
                  fps : int,
                  save_path: str,
-                 num_train_frames: int = 4,         # 👈 ActorsHQ와 동일한 구조
-                 smplx_lru_size: int = 256,   # jane;
-                 toc_lru_capacity: int = 64,   # jane;
-                 sqlite_mmap_size: int = 128 << 20,   # jane;
+                 num_train_frames: int = 4, 
+                 smplx_lru_size: int = 256,
+                 toc_lru_capacity: int = 64,
+                 sqlite_mmap_size: int = 128 << 20,
                  **data_kwargs
-                 ): # qw00n; arguments from configs : **dataset_kwargs
+                 ): # arguments from configs : **dataset_kwargs
         super().__init__(root_dirs, meta_path)
 
         self.n_history_length = n_history_length
-        self.num_train_frames = num_train_frames  # 👈 batch 내 프레임 수 (F)
+        self.num_train_frames = num_train_frames  # 👈 Num of frame in the batch
         self.fps = fps
         self.save_path = save_path
-        '''(주석 처리된 코드 생략)'''       
-
-        # jane;
-        # --- (수정) ---
-        # I/O 객체들을 여기에서 초기화하지 않습니다.
-        # 대신, 각 워커에서 필요할 때 초기화하도록 None으로 설정합니다.
+              
         self._toc_lru_local = None
         self._cam_params_cache_local = None
         self._smplx_lru_local = None
 
-        # 워커-로컬 초기화를 위한 설정값 저장
         self._toc_lru_capacity = toc_lru_capacity
         self._sqlite_mmap_size = sqlite_mmap_size
         self._smplx_lru_size = smplx_lru_size
-        # --- (수정 끝) ---
 
         self.samples = []
         self.ref_data_cache = {}
-        self.all_cam_params_cache = {} # 👈 
+        self.all_cam_params_cache = {} 
 
-        max_cam_id = 60 # 👈 dataset 종류 따라 넉넉하게만 잡으면 됨. 이만큼 for문 돌면서 없으면 camera append 안하고 pass하는 방식
-        self.sampling_stride = max(self.fps // 15, 1) # 👈 
+        max_cam_id = 60
+        self.sampling_stride = max(self.fps // 15, 1)
         
-        # __init__은 메인 프로세스에서 한 번만 실행됩니다.
-        # 샘플 목록과 ref_data_cache를 빌드하기 위해 *임시* TocLRU를 생성합니다.
         init_toc_lru = TocLRU(self.root_dirs,
                               capacity=toc_lru_capacity,
                               sqlite_mmap_size=sqlite_mmap_size)
@@ -178,17 +161,14 @@ class DNARenderingDataset(BaseDataset):
         print(f"[{self.__class__.__name__}] Building 'eval' mode samples...")
         for uid in tqdm(self.uids):
             try:
-                # 임시 toc_lru 사용
                 toc = init_toc_lru.get(uid)
                 
-                # 1. 이 UID의 고정 참조(Reference) 데이터 로드 및 캐시
                 face_bboxes_b = toc.read_face_bbox_bytes(uid)
                 face_bboxes = json.loads(face_bboxes_b)
                 face_bboxes_cam_idx_list = tuple(face_bboxes.keys())
                 if not face_bboxes_cam_idx_list:
                     continue
                     
-                # 예: 첫 번째 유효한 카메라와 프레임을 참조로 고정
                 ref_cam_idx = '26' 
                 ref_frame_idx_list = list(face_bboxes[ref_cam_idx].keys())
                 ref_frame_idx_list.sort(key=lambda x: int(x))
@@ -196,15 +176,12 @@ class DNARenderingDataset(BaseDataset):
                 ref_img_b = toc.read_image_bytes(uid, ref_cam_idx, ref_frame_idx)
                 ref_mask_b = toc.read_mask_bytes(uid, ref_cam_idx, ref_frame_idx)
                 
-                # --- (수정) ---
-                # load_and_resize_image_to_tensor에 임시 toc 객체 전달
                 ref_img, ref_mask, _, ref_face_img, _, is_ref_face_detected = self.load_and_resize_image_to_tensor(
-                    toc, uid, ref_cam_idx, ref_frame_idx, # toc 객체 전달
+                    toc, uid, ref_cam_idx, ref_frame_idx,
                     io.BytesIO(ref_img_b), io.BytesIO(ref_mask_b),
                     None, return_face=True
                 )
-                # --- (수정 끝) ---
-                
+
                 self.ref_data_cache[uid] = {
                     'img': ref_img, 'mask': ref_mask, 'face_img': ref_face_img,
                     'is_ref_face_detected': torch.tensor([is_ref_face_detected])
@@ -212,7 +189,7 @@ class DNARenderingDataset(BaseDataset):
             except Exception as e:
                 print(f"Error processing UID {uid} for eval: {e}")
 
-            # 👈 짝수 카메라 파라미터 로드 및 캐시
+            # Load and cache even-indexed camera parameters
             try:
                 toc = init_toc_lru.get(uid)
                 cam_params_b = toc.read_cam_param(uid)
@@ -223,13 +200,12 @@ class DNARenderingDataset(BaseDataset):
 
                 temp_cam_cache = {}
                 for cam_name, cam_param in cam_params.items():
-                    # --- 수정 1: 짝수번 카메라만 처리 ---
                     try:
                         cam_id = int(cam_name)
                     except ValueError:
                         print(f"Warning: Invalid cam_name format {cam_name} for {uid}, skipping.")
                         continue
-                    if cam_id % 2 != 0:  # 홀수번 카메라인 경우 스킵
+                    if cam_id % 2 != 0: 
                         continue
 
                     cam_param = {k: np.array(v) for k, v in cam_param.items()}
@@ -257,22 +233,18 @@ class DNARenderingDataset(BaseDataset):
                 all_h_list = []
                 all_w_list = []
 
-                # 각 카메라의 해상도와 save_path 준비
-                # --- 수정 2: 짝수번 카메라만 순회 (0, 2, 4, ..., 58) ---
                 for i in range(0, max_cam_id + 1, 2):
-                    cam_name = f"{i:02d}"  # 00, 02, ..., 58 형식
+                    cam_name = f"{i:02d}"
                     if cam_name in temp_cam_cache:
                         all_intri_list.append(temp_cam_cache[cam_name]['K'])
                         all_extri_list.append(temp_cam_cache[cam_name]['c2w'])
 
-                        # ref_frame_idx에서 해상도 읽기
                         ex_img_b = toc.read_image_bytes(uid, cam_name, ref_frame_idx)
                         ex_image = np.array(Image.open(io.BytesIO(ex_img_b)).convert('RGB'))
                         height, width = ex_image.shape[:2]
                         all_h_list.append(height)
                         all_w_list.append(width)
 
-                        # render 저장될 폴더 미리 생성
                         cam_save_path = os.path.join(self.save_path, uid, cam_name)
                         os.makedirs(cam_save_path, exist_ok=True)
                     else:
@@ -292,39 +264,36 @@ class DNARenderingDataset(BaseDataset):
                 print(f"[{self.__class__.__name__}] Error caching cam params for {uid}: {e}")
                 continue
                         
-            # 3. 프레임 범위 기반으로 frame-chunk 샘플 구성
+            # Construct frame-chunk samples based on frame ranges
             min_frame, max_frame = toc.get_min_max_frame_idx(uid, None)
             if min_frame is None:
                 continue
 
-            min_frame_int = int(min_frame) + 15 # qw00n;
+            min_frame_int = int(min_frame) + 15
 
             if uid == '0012_09':
-                max_frame_int = 149 # qw00n;
+                max_frame_int = 149
             else:
-                max_frame_int = 179 # qw00n;
+                max_frame_int = 179
 
-            # 청크를 구성할 수 있는 가장 이른 "끝 프레임"
+            # Earliest valid end frame for a chunk
             first_valid_end_frame = min_frame_int + (self.num_train_frames - 1)
             if first_valid_end_frame > max_frame_int:
                 continue
 
-            eval_chunk_skip = self.num_train_frames  # 겹치지 않게 청크 구성
+            eval_chunk_skip = self.num_train_frames
             for end_frame_int in range(first_valid_end_frame, max_frame_int + 1, eval_chunk_skip):
                 self.samples.append((uid, end_frame_int))
         
         
-        # --- (수정) ---
-        # 임시 TocLRU 핸들 닫기 및 삭제
+        # Close and remove tmp TocLRU handle
         init_toc_lru.close_all()
         del init_toc_lru
-        # --- (수정 끝) ---
 
         print(f"[{self.__class__.__name__}] Created {len(self.samples)} evaluation samples.")
 
-    # --- (신규) ---
-    # 워커-로컬(worker-local) 캐시 객체들을 위한 프로퍼티(getter)
-    # 각 워커에서 이 프로퍼티에 처음 접근할 때 객체가 초기화됩니다.
+    # Properties (getters) for worker-local cache objects.
+    # The objects are initialized when this property is first accessed in each worker.
     @property
     def toc_lru(self) -> TocLRU:
         if self._toc_lru_local is None:
@@ -344,30 +313,23 @@ class DNARenderingDataset(BaseDataset):
         if self._cam_params_cache_local is None:
             self._cam_params_cache_local = {}
         return self._cam_params_cache_local
-    # --- (신규 끝) ---
 
     def __len__(self):
-        return len(self.samples) # 👈 전체 (uid, end_frame) 청크 샘플 수
+        return len(self.samples)
 
     # def other methods if needed   
 
-    # jane;
     def _get_cam_cache(self, uid: str) -> dict: 
-        # --- (수정) ---
-        # 워커-로컬 프로퍼티 사용
         if uid in self.cam_params_cache: 
             return self.cam_params_cache[uid]
         toc = self.toc_lru.get(uid)
-        # --- (수정 끝) ---
         
         cam_params_b = toc.read_cam_param(uid)
         cam_params = json.loads(cam_params_b)
         if not cam_params: 
             raise FileNotFoundError(f"[{uid}] cam_params.json not found in tar")
         
-        # --- (수정) ---
         self.cam_params_cache[uid] = {}
-        # --- (수정 끝) ---
         
         for cam_name, cam_param in cam_params.items(): 
             cam_param = {k: np.array(v) for k, v in cam_param.items()}
@@ -386,16 +348,11 @@ class DNARenderingDataset(BaseDataset):
             c2w_4x4[:3, :3] = R_c2w
             c2w_4x4[:3, 3] = T_c2w.flatten()
             
-            # --- (수정) ---
             self.cam_params_cache[uid][cam_name] = {'K': K_4x4, 'c2w': c2w_4x4}
-            # --- (수정 끝) ---
         
-        # --- (수정) ---
         return self.cam_params_cache[uid]
-        # --- (수정 끝) ---
         
     def load_camera_params(self, uid: str, camera_name: str) -> tuple[np.ndarray, np.ndarray]: 
-        # [참고] ActorsHQ와 마찬가지로, inner_get_item에서는 사용하지 않음.
         cam_cache = self._get_cam_cache(uid)
         try: 
             
@@ -407,23 +364,18 @@ class DNARenderingDataset(BaseDataset):
         extrinsic_matrix = c2w[None, ...] 
         return intrinsic_matrix, extrinsic_matrix
     
-    # --- (수정) ---
-    # toc_reader를 첫 번째 인자로 받도록 시그니처 변경
     def load_and_resize_image_to_tensor(self, toc: TocReader, uid: str, cam_idx: str, frame_idx: str, img_b: bytes, mask_b: bytes, intrinsic_matrix: np.ndarray, max_size: int = 512, return_face: bool = False) -> tuple[torch.Tensor, torch.Tensor, np.ndarray]:
-    # --- (수정 끝) ---
         try:
-            image = np.array(Image.open(img_b).convert('RGB'))  # H,W,C
+            image = np.array(Image.open(img_b).convert('RGB'))
             image = (image / 255.).astype(np.float32)
         except: 
-            print(f"오류: 이미지 데이터가 없습니다.", uid, cam_idx, frame_idx)
+            print(f"Error: Image is not exists", uid, cam_idx, frame_idx)
             return None, None, None
         height, width = image.shape[:2]
         try:
-            # 'L' 모드는 흑백(grayscale) 이미지로, 채널이 1개입니다.
-            mask = np.array(Image.open(mask_b).convert('L'))  # H,W
+            mask = np.array(Image.open(mask_b).convert('L'))
         except:
-            print(f"오류: 마스크 데이터가 없습니다.", uid, cam_idx, frame_idx)
-            # 오류 발생 시, 검은색 마스크
+            print(f"Error: Mask is not exists", uid, cam_idx, frame_idx)
             mask = np.zeros((height, width), dtype=np.float32)
         mask = (mask > 0.5).astype(np.float32)
         
@@ -445,11 +397,10 @@ class DNARenderingDataset(BaseDataset):
                 resized_head_rgb = np.zeros((128, 128, 3), dtype=np.float32)
                 face_bbox = np.array([0, 0, 1, 1], dtype=np.float32)
                 is_face_detected = False
-                # print(f"[jane] No face detect: {e}")
+                # print(f"No face detect: {e}")
         
-        # 2. crop image to enlarge human area.
-        aspect_standard = 5.0 / 3  ## 532L in runners/infer/human_lrm.py
-        #enlarge_ratio=[1.0, 1.0]  ## 532L in runners/infer/human_lrm.py
+        # 1. crop image to enlarge human area.
+        aspect_standard = 5.0 / 3
         image_patch, mask, offset_x, offset_y = center_crop_pad_according_to_mask(
             image, mask, aspect_standard
         )
@@ -461,23 +412,18 @@ class DNARenderingDataset(BaseDataset):
         except: 
             intrinsic_matrix_rescale = None
         
-        # 3. resize to render_tgt_size for training
+        # 2. resize to render_tgt_size for training
         tgt_hw_size, ratio_y, ratio_x = calc_new_tgt_size_by_aspect(
             cur_hw=image_patch.shape[:2],
             aspect_standard=aspect_standard,
             tgt_size=max_size,
-            multiply=16,  ## 17L in runners/infer/human_lrm.py
-        )  # (1696, 1024)
+            multiply=16,
+        )
 
         image_patch_resized = cv2.resize(image_patch, (tgt_hw_size[1], tgt_hw_size[0]), interpolation=cv2.INTER_AREA)
         mask = cv2.resize(mask, (tgt_hw_size[1], tgt_hw_size[0]), interpolation=cv2.INTER_AREA)
         if intrinsic_matrix_rescale is not None: 
             intrinsic_matrix_rescale = scale_intrs(intrinsic_matrix_rescale, ratio_x=ratio_x, ratio_y=ratio_y)
-            #assert (abs(intrinsic_matrix_rescale[:,0, 2] * 2 - image_patch_resized.shape[1]) < 2.5), f"{intrinsic_matrix_rescale[:,0, 2] * 2}, {image_patch_resized.shape[1]}"
-            #assert (abs(intrinsic_matrix_rescale[:,1, 2] * 2 - image_patch_resized.shape[0]) < 2.5), f"{intrinsic_matrix_rescale[:,1, 2] * 2}, {image_patch_resized.shape[0]}"
-
-            #intrinsic_matrix_rescale[:,0, 2] = image_patch_resized.shape[1] // 2
-            #intrinsic_matrix_rescale[:,1, 2] = image_patch_resized.shape[0] // 2
         
         image_tensor = torch.tensor(image_patch_resized).permute(2, 0, 1)
         mask_tensor = torch.tensor(mask)[None,:,:]  # 1,H,W
@@ -507,11 +453,9 @@ class DNARenderingDataset(BaseDataset):
     
     def load_and_resize_mask_to_tensor(self, uid: str, cam_idx: str, frame_idx: str, mask_b: bytes, target_size: tuple):
         try:
-            # 'L' 모드는 흑백(grayscale) 이미지로, 채널이 1개입니다.
             mask_pil = Image.open(mask_b).convert('L')
         except:
-            print(f"오류: 마스크 데이터가 없습니다.", uid, cam_idx, frame_idx)
-            # 오류 발생 시, 검은색 마스크를 대신 반환합니다.
+            print(f"Error: Mask is not exists", uid, cam_idx, frame_idx)
             return torch.zeros(1, target_size[0], target_size[1])
 
         mask_pil = mask_pil.resize((target_size[1], target_size[0]), Image.Resampling.NEAREST)
@@ -522,13 +466,10 @@ class DNARenderingDataset(BaseDataset):
     
     def load_smplx(self, uid: str, frame_idx: str): 
         key = (uid, frame_idx)
-        # --- (수정) ---
-        # 워커-로컬 프로퍼티 사용
         hit = self.smplx_lru.get(key)
         if hit is not None:
             return hit
         toc = self.toc_lru.get(uid)
-        # --- (수정 끝) ---
         
         smplx_b, shape_param_b = toc.read_smplx_bytes(uid, frame_idx)
         smplx_data = None
@@ -548,12 +489,10 @@ class DNARenderingDataset(BaseDataset):
             smplx_data['transl'] = np.array(_smplx_data['trans'], dtype=np.float32)
             smplx_data['expr'] = np.array(_smplx_data['expr'], dtype=np.float32)
             
-            # --- (수정) ---
             self.smplx_lru.put(key, smplx_data)
-            # --- (수정 끝) ---
         except:
             print(f"Error: The smplx data was not found.", uid, frame_idx)
-            smplx_data = None # 👈
+            smplx_data = None
             
         return smplx_data
 
@@ -582,22 +521,22 @@ class DNARenderingDataset(BaseDataset):
 
     @no_proxy
     def inner_get_item(self, idx):
-        # 1. 샘플 정보 가져오기 (청크의 끝 프레임)
+        # 1. Get sample metadata (the end frame of the chunk)
         uid, end_frame_idx_int = self.samples[idx]
-        toc = self.toc_lru.get(uid)  # 워커-로컬 toc
+        toc = self.toc_lru.get(uid)
         F = self.num_train_frames
 
-        # 2. 캐시된 데이터 가져오기
+        # 2. Retrieve cached data
         ref_data = self.ref_data_cache[uid]
         cam_data = self.all_cam_params_cache[uid]  # (1, V, ...)
 
-        # 3. 프레임 범위 정보
+        # 3. Load a frame chunk (F frames)
         min_frame_idx, _ = toc.get_min_max_frame_idx(uid, None)
         if min_frame_idx is None:
             raise RuntimeError(f"UID {uid} has no min/max frame index.")
         min_frame_idx_int = int(min_frame_idx)
 
-        # 뷰 독립적인 데이터 (Frame-major list: [F] x ...)
+        # View-independent data (frame-major list: [F] x ...)
         target_betas_list = []
         target_exprs_list = []
         target_pose_list = []
@@ -605,7 +544,7 @@ class DNARenderingDataset(BaseDataset):
         motion_history_list = []
         frame_indices_list = []
         
-        # Frame 루프
+        # Outer loop: Frames
         for i in range(self.num_train_frames):
             current_frame_idx_int = end_frame_idx_int - (self.num_train_frames - 1 - i)
             current_frame_idx_str = f'{current_frame_idx_int:06d}'
@@ -627,7 +566,8 @@ class DNARenderingDataset(BaseDataset):
             )
             motion_history_list.append(torch.from_numpy(skeleton_history))
         
-        # 4. 스택
+        # 4. Final Stacking
+        # Stack view-independent data (dim=0) -> (F, ...)
         target_betas_tensor = torch.stack(target_betas_list, dim=0)      # (F, 10)
         target_exprs_tensor = torch.stack(target_exprs_list, dim=0)      # (F, 10)
         
@@ -636,7 +576,7 @@ class DNARenderingDataset(BaseDataset):
         motion_histories_tensor = torch.stack(motion_history_list, dim=0)  # (F, M, 56, 3)
         frame_indices_tensor = torch.tensor(frame_indices_list, dtype=torch.int64)
 
-        # 5. Reference 데이터 확장 (F, 1, ...)
+        # 5. Expand Reference Data to Match Output Shape (F, 1, ...)
         ref_img_expanded = ref_data['img'].unsqueeze(0).unsqueeze(0).repeat(
             F, 1, 1, 1, 1
         )
@@ -657,11 +597,10 @@ class DNARenderingDataset(BaseDataset):
             'extri': cam_data['extri'],                 # (1, V, 4, 4)
             'height': cam_data['height'], # (1, V)
             'width': cam_data['width'], # (1, V)
-            # 👈 (gt_img, gt_mask 제거됨)
 
             # --- View-Independent Target Data ---
             'target_betas': target_betas_tensor,    # (F, 10)
-            'target_exprs': target_exprs_tensor, # 👈 꼭 빠뜨리지 말고 반환하기
+            'target_exprs': target_exprs_tensor, 
             
             'target_pose': target_poses_tensor,     # (F, 55, 3)
             'target_transl': target_transls_tensor, # (F, 3)
@@ -676,11 +615,8 @@ class DNARenderingDataset(BaseDataset):
     
     def close(self):
         try: 
-            # --- (수정) ---
-            # 워커-로컬 객체가 생성되었을 경우에만 닫기 시도
             if self._toc_lru_local:
                 self._toc_lru_local.close_all()
-            # --- (수정 끝) ---
         except Exception: 
             pass
 

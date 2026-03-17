@@ -69,7 +69,6 @@ diff-gaussian-rasterization/
 LightGlue/
 pytorch3d/
 simple-knn/
-engine/
 gfpgan/
 *.tar
 *.smc

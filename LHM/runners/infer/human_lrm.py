@@ -59,6 +59,14 @@ from LHM.utils.hf_hub import wrap_model_hub
 from LHM.utils.logging import configure_logger
 from LHM.utils.model_card import MODEL_CARD, MODEL_CONFIG
 
+fd_front_cam_id_dict = {
+    "00123": "02", "00134": "02", "00135": "02", "00136": "02", "00175": "02", "00176": "02",
+    "00122": "03", "00129": "03", "00156": "03", "00167": "10", "00127": "11", "00137": "11",
+    "00140": "11", "00147": "11", "00148": "11", "00149": "11", "00151": "11", "00152": "11",
+    "00154": "11", "00160": "11", "00163": "11", "00168": "11", "00169": "11", "00170": "11",
+    "00174": "11", "00179": "11", "00180": "11", "00185": "11", "00187": "11", "00188": "11",
+    "00190": "11", "00191": "11"
+}
 
 def download_geo_files():
     if not os.path.exists('./pretrained_models/dense_sample_points/1_20000.ply'):
@@ -308,7 +316,7 @@ def parse_configs():
         model_path= query_model.query(model_name) 
         cli_cfg.model_name = model_path 
     
-    model_config = query_model_config(model_name) # qw00n; load the configs from LHM/configs/
+    model_config = query_model_config(model_name) # load the configs from LHM/configs/
 
     if model_config is not None:
         cfg_train = OmegaConf.load(model_config)
@@ -384,7 +392,6 @@ class HumanLRMInferrer(Inferrer):
 
         self.cfg, cfg_train = parse_configs()
 
-        # qw00n;
         self.cfg.is_dynamic = cfg_train['model'].is_dynamic
         self.cfg.n_history_length = cfg_train['model'].n_history_length
 
@@ -674,8 +681,6 @@ class HumanLRMInferrer(Inferrer):
         print(f"save mesh to {os.path.join(dump_mesh_dir, output_gs_path)}")
         output_gs.save_ply(os.path.join(dump_mesh_dir, output_gs_path))
 
-    # qw00n; updated 1027
-    # jane; updated 1113
     def create_motion_history(self, smplx_params, n_history_length, motion_seqs_dir, sampling_stride=1):
         root_pose = smplx_params['root_pose'].reshape(smplx_params['root_pose'].shape[0], smplx_params['root_pose'].shape[1], 1, 3)
         jaw_pose = smplx_params['jaw_pose'].reshape(smplx_params['jaw_pose'].shape[0], smplx_params['jaw_pose'].shape[1], 1, 3)
@@ -725,22 +730,20 @@ class HumanLRMInferrer(Inferrer):
         if F == 0:
             raise ValueError("smplx_params sequence is empty")
 
-        # 1114 jane; sampling stride
-        # --- windowing ---
-        window_size = n_history_length + 1  # history + 현재 프레임 수
+        window_size = n_history_length + 1
         effective_history = n_history_length * sampling_stride  # t - n_history_length*stride 
 
-        # padding: 초기 포즈 복사 (기존과 동일한 정책 유지)
+        # padding w/ initial pose
         pad = full_pose_with_transl[0].unsqueeze(0).repeat(effective_history, 1, 1)  # (effective_history,56,3)
         padded_data = torch.cat([pad, full_pose_with_transl], dim=0)  # (effective_history + F, 56,3)
 
-        # base_idx = effective_history + t (현재 프레임 위치)
+        # base_idx = effective_history + t
         base_idx = torch.arange(F, device=device) + effective_history  # (F,)
 
         # history offsets: n_history_length*stride, ..., stride, 0
         hist_offsets = torch.arange(n_history_length, -1, -1, device=device) * sampling_stride  # (window_size,)
 
-        # indices: shape (F, window_size), 값은 padded_data 상의 인덱스
+        # indices: shape (F, window_size)
         all_idx = base_idx[:, None] - hist_offsets[None, :]  # (F, window_size)
 
         motion_history = padded_data[all_idx]  # (F, window_size, 56, 3)
@@ -813,8 +816,8 @@ class HumanLRMInferrer(Inferrer):
                 interpolation=cv2.INTER_AREA,
             )  # resize to dino size
         except Exception as e:
-            # qw00n; inform invalid head image
-            print(f"[qw00n] ERROR: Invalid bbox or something else: {e}")
+            # inform invalid head image
+            print(f"ERROR: Invalid bbox or something else: {e}")
             src_head_rgb = np.zeros(
                 (self.cfg.src_head_size, self.cfg.src_head_size, 3), dtype=np.uint8
             )
@@ -823,7 +826,7 @@ class HumanLRMInferrer(Inferrer):
             torch.from_numpy(src_head_rgb / 255.0).float().permute(2, 0, 1).unsqueeze(0)
         )  # [1, 3, H, W]
 
-        # qw00n; save cropped head image for vis
+        # save cropped head image for vis
         save_head_img_path = os.path.join(
             dump_tmp_dir, "head_" + os.path.basename(image_path)
         )
@@ -848,30 +851,11 @@ class HumanLRMInferrer(Inferrer):
         if motion_name in self.motion_dict:
             motion_seq = self.motion_dict[motion_name]
         else:
-            # qw00n;
-            '''
-            motion_seq = prepare_motion_seqs(
-                motion_seqs_dir,
-                motion_img_dir,
-                save_root=dump_tmp_dir,
-                fps=motion_video_read_fps,
-                bg_color=1.0,
-                aspect_standard=aspect_standard,
-                enlarge_ratio=[1.0, 1, 0],
-                render_image_res=render_size,
-                multiply=16,
-                need_mask=motion_img_need_mask,
-                vis_motion=vis_motion,
-                motion_size=200,
-            )
-            '''
-            
-            cam_param_path = osp.join(motion_seqs_dir, '..', '..', 'cam_params.json')  #osp.join('/data3/jane/DNA_Rendering/DNA_Rendering_eval/0166_04/cam_params.json') #osp.join(motion_seqs_dir, '..', '..', 'cam_params.json')
+            cam_param_path = osp.join(motion_seqs_dir, '..', '..', 'cam_params.json')
             with open(cam_param_path) as f: 
                 camera_name_set = set(json.load(f).keys())
 
-
-            print(motion_seqs_dir)
+            #print(motion_seqs_dir)
             if self.cfg.camera_name is not None: 
                 camera_name = self.cfg.camera_name
                 if camera_name not in camera_name_set: 
@@ -880,17 +864,10 @@ class HumanLRMInferrer(Inferrer):
                 if 'DNA' in motion_seqs_dir: 
                     camera_name = '26'
                     
-                elif '4D' in motion_seqs_dir:   # 2 groups have different front view cam idx
-                    # with open("/data/qw00n/LHM/LHM/runners/infer/infer_front_02_uid_list.txt") as f: 
-                    #     front_02_uid_list = [uid.strip() for uid in f.readlines()]
-                    # camera_name = None
-                    # for uid in front_02_uid_list: 
-                    #     if uid in motion_seqs_dir: 
-                    #         camera_name = '02'
-                    #         break
-                    # if not camera_name: 
-                    #     camera_name = '11'
-                    camera_name = '05'
+                elif '4D' in motion_seqs_dir:   # Different front view cam idx
+                    subject_id = motion_name.split('_')[0]
+                    assert subject_id in fd_front_cam_id_dict, f"Subject {subject_id} not in 4d_front_cam_id_list.json!"
+                    camera_name = fd_front_cam_id_dict[subject_id]
                         
                 elif 'I3D' in motion_seqs_dir: 
                     if '01' in camera_name_set: 
@@ -903,9 +880,7 @@ class HumanLRMInferrer(Inferrer):
                 else:   # Custom
                     camera_name = '00'
 
-            #camera_name = '26' # hard code
-
-            print("Cam: ", camera_name)
+            #print("Cam: ", camera_name)
             motion_seq = prepare_motion_seqs_2(   # 4d-dress, i3d, dna, BODYSHAPE, CAMPARAM
                 motion_seqs_dir,
                 motion_img_dir,
@@ -919,7 +894,7 @@ class HumanLRMInferrer(Inferrer):
                 need_mask=motion_img_need_mask,
                 vis_motion=vis_motion,
                 motion_st_idx=self.cfg.motion_st_idx,
-                motion_size=self.cfg.motion_size, ######################
+                motion_size=self.cfg.motion_size,
 
                 cam_param_path = cam_param_path,
                 camera_name=camera_name,
@@ -935,22 +910,18 @@ class HumanLRMInferrer(Inferrer):
         self.model.to(dtype)
         smplx_params = motion_seq['smplx_params']
 
-        #smplx_params['betas'] = [-1.7689540386199951, -0.09952209144830704, -0.015001938678324223, 0.7855855822563171, 0.15415586531162262, 0.3601478338241577, 0.0976748988032341, 0.10559598356485367, -0.24895749986171722, -0.19119463860988617]
-        #smplx_params['betas'] = torch.tensor(smplx_params['betas']).unsqueeze(0)
-
-        # qw00n; slightly modified to infer dynamic LHM
+        # slightly modified to infer dynamic LHM
         smplx_params={
                 k: v.to(device) for k, v in smplx_params.items()
             }
         
         smplx_params['betas'] = shape_param.to(device)  # (1,10)
 
-        # qw00n;
         if self.cfg.is_dynamic:
             motion_history = self.create_motion_history(smplx_params, self.cfg.n_history_length, motion_seqs_dir, self.cfg.sampling_stride)
             #print(motion_history.shape) # batch_size, t+1, 56, 3
 
-        # qw00n;
+        
         if not self.cfg.is_dynamic: # original
             gs_model_list, query_points, transform_mat_neutral_pose = self.model.infer_single_view(
                 image.unsqueeze(0).to(device, dtype),
@@ -994,7 +965,6 @@ class HumanLRMInferrer(Inferrer):
                 batch_smplx_params = dict()
                 batch_smplx_params["betas"] = shape_param.to(device)
 
-                # qw00n;
                 if self.cfg.is_dynamic:
                     gs_model_list, query_points, transform_mat_neutral_pose = self.model.infer_single_view(
                         image.unsqueeze(0).to(device, dtype),
@@ -1072,7 +1042,6 @@ class HumanLRMInferrer(Inferrer):
             verbose=True,
         )
 
-    ##
     def infer(self):
 
         image_paths = []
@@ -1088,13 +1057,13 @@ class HumanLRMInferrer(Inferrer):
                         image_paths.append(os.path.join(root, file))
             image_paths.sort()
 
-        # qw00n; DataParallel
+        # DataParallel
         # alloc to each DDP worker
         image_paths = image_paths[
-            self.accelerator.process_index :: self.accelerator.num_processes # qw00n; proc_id + n*num_gpus
+            self.accelerator.process_index :: self.accelerator.num_processes # proc_id + n*num_gpus
         ]
 
-        # qw00n; for all images
+        # for all images
         for image_path in tqdm(image_paths, disable = not self.accelerator.is_local_main_process,):
             # prepare dump paths
             image_name = os.path.basename(image_path)

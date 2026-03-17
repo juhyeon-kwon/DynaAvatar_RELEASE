@@ -67,12 +67,12 @@ Download the pretrained [DynaAvatar checkpoint](https://drive.google.com/drive/f
 ## 💃 Inference 
 
 ### Usage Example
-Here are two examples using different motion sequences (e.g., DNA-Rendering and 4D-DRESS datasets). 
+Here are three examples using different motion sequences (e.g., DNA-Rendering, 4D-DRESS datasets, and in-the-wild sequence). 
 
 #### **Example 1: DNA-Rendering sequence**
 ```bash
 CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
-    PATH/DynaAvatar_RELEASE/assets/novel_subject \
+    ./assets/novel_subject \
     PATH/motion_seqs/DNA_Rendering/0124_03/smplx/smplx_params_smooth \
     None 0 500 15
 ```
@@ -80,14 +80,40 @@ CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
 #### **Example 2: 4D-DRESS sequence**
 ```bash
 CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
-    PATH/DynaAvatar_RELEASE/assets/novel_subject \
+    ./assets/novel_subject \
     PATH/motion_seqs/4D-DRESS/00152_outer_16/smplx/smplx_params_smooth \
     None 0 500 30
 ```
 
+#### **Example 3: In-the-wild sequence**
+Download model weights for motion prediction from the given video.
+```bash
+wget -P ./pretrained_models/human_model_files/pose_estimate https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/aigc3d/data/LHM/yolov8x.pt
+wget -P ./pretrained_models/human_model_files/pose_estimate https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/aigc3d/data/LHM/vitpose-h-wholebody.pth
+```
+Install dependencies.
+```bash
+cd ./engine/pose_estimation
+pip install mmcv==1.3.9 --no-build-isolation
+pip install -v -e third-party/ViTPose
+pip install ultralytics
+```
+Run the motion prediction script.
+```bash
+python ./engine/pose_estimation/video2motion.py --video_path ${VIDEO_PATH} 
+```
+After motion prediction, the predicted SMPL-X parameters and camera parameters will be saved in `./custom_motion/<video_name_without_extension>`.  
+Finally, run the inference script: 
+```bash
+CUDA_VISIBLE_DEVICES=0 bash inference.sh LHM-500M \
+    ${REF_IMG_PATH} \
+    custom_motion/<video_name_without_extension>/smplx/smplx_params_smooth \
+    None 0 None ${VIDEO_FPS}
+```
+
 ### Arguments
 ```bash
-bash inference.sh [MODEL_NAME] [SOURCE_IMAGE_DIR] [MOTION_PARAM_PATH] [BG_PATH] [START_FRAME] [MOTION_SIZE] [FPS]
+bash inference.sh [MODEL_NAME] [SOURCE_IMAGE_DIR] [MOTION_PARAM_PATH] [BG_PATH] [START_FRAME] [MOTION_SIZE] [VIDEO_FPS]
 ```
 
 * **MODEL_NAME**: Name of the backbone model (e.g., `LHM-500M`).

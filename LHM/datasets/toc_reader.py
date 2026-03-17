@@ -16,9 +16,8 @@ class TocReader:
         self.db_path  = db_path
         assert os.path.exists(self.db_path), f"TOC not found: {self.db_path}"
 
-        # raw file handle (무압축 tar면 랜덤 seek 가능)
+        # raw file handle
         self.fh = open(self.tar_path, "rb", buffering=0)
-        # SQLite 인덱스: 메모리 거의 0, prefix/정렬 쿼리 용이
         uri = f"file:{self.db_path}?mode=ro&immutable=1"  # read only mode & immutable
         self.con = sqlite3.connect(uri, uri=True, check_same_thread=False)
         self.con.execute("PRAGMA query_only=ON")
@@ -40,7 +39,6 @@ class TocReader:
         return self.fh.read(size)
 
     def iter_prefix(self, prefix: str, exts: Tuple[str, ...] = ()) -> Iterable[Tuple[str, bytes]]:
-        # prefix로 빠르게 뽑기 (LIKE 인덱스 최적화는 path 앞쪽이 동일할수록 유리)
         like = prefix.replace("%", "%%") + "%"
         q = "SELECT path, off, size FROM files WHERE path LIKE ?"
         for path, off, size in self.con.execute(q, (like,)):
@@ -51,7 +49,6 @@ class TocReader:
 
     # ------------- sampling meta -------------
     def list_uids(self) -> List[str]:
-        # images와 masks 중 하나라도 있는 uid
         q = "SELECT DISTINCT uid FROM images UNION SELECT DISTINCT uid FROM masks"
         return [r[0] for r in self.con.execute(q).fetchall()]
 
@@ -156,7 +153,7 @@ class TocReader:
 
 
 class TocLRU:
-    """UID별 DNATarTOC 인스턴스를 LRU로 관리해 FD 한도 내에서 운용."""
+    """Manage TarTOC instances per UID with LRU eviction to stay within the file descriptor limit."""
     def __init__(self, root_dirs: str,
                  capacity: int = 64,
                  sqlite_mmap_size: int = 128 << 20):
@@ -174,7 +171,7 @@ class TocLRU:
     def _ensure_alive(self, uid: str, toc: "TocReader") -> "TocReader":
         if toc and toc.ping():
             return toc
-        # 재오픈
+        # reopen
         try:
             if toc: toc.close()
         except Exception:
@@ -189,12 +186,11 @@ class TocLRU:
             self.od.move_to_end(uid)
             return toc
 
-        # 새로 열기
         toc = self._open(uid)
         self.od[uid] = toc
         self.od.move_to_end(uid)
 
-        # 용량 초과 시 가장 오래된 것부터 닫기
+        # Close the oldest ones first when the capacity is exceeded
         if len(self.od) > self.cap:
             old_uid, old_toc = self.od.popitem(last=False)
             try: old_toc.close()

@@ -34,7 +34,7 @@ class MixerDataset(torch.utils.data.Dataset):
         self.subsets = [
             self._dataset_fn(subset, split)(
                 use_flame=subset["use_flame"], ##
-                src_head_size=subset.get("src_head_size", 448), #qw00n; default 448
+                src_head_size=subset.get("src_head_size", 448), # default 448
                 n_history_length=subset.get("n_history_length", 4),
                 fps=subset.get("fps", 15),
                 #save_path=subset["save_path"], # eval
@@ -42,7 +42,7 @@ class MixerDataset(torch.utils.data.Dataset):
             )
             for subset in subsets
         ]
-        # qw00n; Adjusting Sampling Ratios of each datasets
+        # Adjusting Sampling Ratios of each datasets
         self.virtual_lens = [
             math.ceil(subset_config["sample_rate"] * len(subset_obj))
             for subset_config, subset_obj in zip(subsets, self.subsets)

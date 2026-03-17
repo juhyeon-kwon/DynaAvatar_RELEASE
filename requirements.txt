@@ -2,6 +2,7 @@ einops
 roma
 accelerate
 smplx
+modelscope
 
 basicsr==1.4.2
 decord==0.6.0
