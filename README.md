@@ -11,7 +11,7 @@
 ## TODO
 - [x] Release inference code 💃
 - [x] Release training code 🕺
-- [ ] Release demo using in-the-wild video' motion 
+- [x] Release demo using in-the-wild video' motion 
 - [ ] Release re-annotated datasets 📁
 
 ---
