@@ -126,7 +126,40 @@ bash inference.sh [MODEL_NAME] [SOURCE_IMAGE_DIR] [MOTION_PARAM_PATH] [BG_PATH] 
 ---
 
 ## 📁 Reannotated Datasets
-You can download our datasets [here]().
+
+First, download original datasets from [4D-DRESS](https://github.com/eth-ait/4d-dress) and [DNA-Rendering](https://github.com/DNA-Rendering/DNA-Rendering).
+You can download our reannotated datasets [here](https://drive.google.com/drive/folders/1QMLCWHvimh3ZZ6g2EHvCuc28SmGNCZUi?usp=drive_link).
+
+> 💡 **Note:** The shared SMPL-X parameters are re-annotated results. These are numerical values that **cannot be used to reconstruct the original dataset without access to the raw images from 4D-DRESS and DNA-Rendering**. We provide these for research reproducibility only.
+### 1. 4D-DRESS
+#### 1.1 Render Images and Save Camera Parameters
+```bash
+python ./preprocess/render_4d_dress.py --dataset_root_dir /PATH/TO/4D-DRESS --target_root_dir /PATH/TO/4D-DRESS_reannot_release
+```
+#### 1.2 Archive & Make TOC (for Training)
+Due to our file system limitations on our server, we store the dataset in .tar format.
+```bash
+python ./preprocess/archive_as_tar.py --dataset_root_dir /PATH/TO/4D-DRESS_reannot_release --target_dir /PATH/TO/4D-DRESS_reannot_tar
+python ./preprocess/make_toc.py --target_dir /PATH/TO/4D-DRESS_reannot_tar
+```
+
+
+### 2. DNA-Rendering
+#### 2.1 Extract Images and Camera Parameters from the Original Dataset
+```bash
+pip install h5py
+python ./preprocess/extract_from_smc.py --input_dir /PATH/TO/dna_rendering_release_data/Part {idx}/dna_rendering_part{idx}_main --output_root_dir /PATH/TO/DNA_Rendering
+```
+#### 2.2 Crop Original Images and Save Rescaled Camera Parameters
+We crop the original images to remove background regions.
+```bash
+python ./preprocess/crop_dna_rendering.py --dataset_root_dir /PATH/TO/DNA_Rendering --target_root_dir /PATH/TO/DNA_Rendering_reannot_release
+```
+#### 2.3 Archive & Make TOC (for Training)
+```bash
+python ./preprocess/archive_as_tar.py --dataset_root_dir /PATH/TO/DNA_Rendering_reannot_release --target_dir /PATH/TO/DNA_Rendering_reannot_tar
+python ./preprocess/make_toc.py --target_dir /PATH/TO/DNA_Rendering_reannot_tar
+```
 
 ---
 

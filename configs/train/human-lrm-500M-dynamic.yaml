@@ -60,7 +60,7 @@ model:
 dataset:
   subsets:
         -   name: dna_rendering
-            root_dirs: "PATH-DATASET/DNA_Rendering/DNA_Rendering_tar_face_targ_added"
+            root_dirs: "PATH-DATASET/DNA_Rendering_reannot_tar"
             meta_path:
                 train: "PATH/DynaAvatar_RELEASE/configs/train/dna_filtered_loose.json"  
                 val: "PATH/DynaAvatar_RELEASE/configs/train/dna_filtered_loose.json"
@@ -71,7 +71,7 @@ dataset:
             n_history_length: 15 # qw00n;
 
         -   name: 4d_dress
-            root_dirs: "PATH-DATASET/4D-DRESS/4D-DRESS_tar_face_targ_added"
+            root_dirs: "PATH-DATASET/4D-DRESS_reannot_tar"
             meta_path:
                 train: "PATH/DynaAvatar_RELEASE/configs/train/no_interaction_subject_ids_4d_learnable_except_cloth_eval.json" 
                 val: "PATH/DynaAvatar_RELEASE/configs/train/no_interaction_subject_ids_4d_learnable_except_cloth_eval.json"

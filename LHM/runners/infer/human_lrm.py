@@ -865,7 +865,8 @@ class HumanLRMInferrer(Inferrer):
                     camera_name = '26'
                     
                 elif '4D' in motion_seqs_dir:   # Different front view cam idx
-                    subject_id = motion_name.split('_')[0]
+                    _motion_seqs_dir = motion_seqs_dir[:-1] if motion_seqs_dir[-1] == "/" else motion_seqs_dir
+                    subject_id = _motion_seqs_dir.split('/')[-3].split('_')[0]
                     assert subject_id in fd_front_cam_id_dict, f"Subject {subject_id} not in 4d_front_cam_id_list.json!"
                     camera_name = fd_front_cam_id_dict[subject_id]
                         
