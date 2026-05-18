@@ -891,6 +891,43 @@ class ModelHumanLRMSapdinoBodyHeadSD3_5(ModelHumanLRM):
                 out[k] = v
         return out
 
+    def animation_infer_face_blend(self, gs_model_list, query_points, smplx_params, render_c2ws, render_intrs, render_bg_colors):
+        """Like animation_infer(is_dynamic=True) but uses face-blend skinning:
+        face/hand vertices use skinning_weight_original (LHM), body uses offset_skinning_weight (DynaAvatar)."""
+        render_h = int(render_intrs[0, 0, 1, 2] * 2)
+        render_w = int(render_intrs[0, 0, 0, 2] * 2)
+        render_res_list = []
+        num_views = render_c2ws.shape[1]
+
+        for view_idx in range(num_views):
+            render_res = self.renderer.forward_animate_gs_face_blend(
+                [gs_model_list[view_idx]],
+                query_points[view_idx].unsqueeze(0),
+                self.renderer.get_single_view_smpl_data(smplx_params, view_idx),
+                render_c2ws[:, view_idx : view_idx + 1],
+                render_intrs[:, view_idx : view_idx + 1],
+                render_h,
+                render_w,
+                render_bg_colors[:, view_idx : view_idx + 1],
+            )
+            render_res_list.append(render_res)
+
+        out = defaultdict(list)
+        for res in render_res_list:
+            for k, v in res.items():
+                if isinstance(v[0], torch.Tensor):
+                    out[k].append(v.detach())
+                else:
+                    out[k].append(v)
+        for k, v in out.items():
+            if isinstance(v[0], torch.Tensor):
+                out[k] = torch.concat(v, dim=1)
+                if k in ["comp_rgb", "comp_mask", "comp_depth"]:
+                    out[k] = out[k][0].permute(0, 2, 3, 1)
+            else:
+                out[k] = v
+        return out
+
     def animation_infer_gs(self, gs_attr_list, query_points, smplx_params):
         '''Inference code to query gs mesh.
         '''

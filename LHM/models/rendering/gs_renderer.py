@@ -1539,6 +1539,142 @@ class GS3DRenderer(nn.Module):
 
         return uv, depth
 
+    def animate_gs_model_face_blend(self, gs_attr: GaussianAppOutput, query_points, smplx_data, debug=False):
+        """Like animate_gs_model but uses face-blend skinning:
+        face/hand vertices use skinning_weight_original (LHM style),
+        body vertices use query_skinning + offset_skinning_weight (DynaAvatar style)."""
+        device = gs_attr.offset_xyz.device
+
+        cano_smplx_data_keys = [
+            "root_pose", "body_pose", "jaw_pose", "leye_pose", "reye_pose",
+            "lhand_pose", "rhand_pose", "expr", "trans",
+        ]
+        merge_smplx_data = dict()
+        for key in cano_smplx_data_keys:
+            warp_data = smplx_data[key]
+            cano_pose = torch.zeros_like(warp_data[:1])
+            if key == "body_pose":
+                cano_pose[0, 15, -1] = -math.pi / 6
+                cano_pose[0, 16, -1] = +math.pi / 6
+            merge_smplx_data[key] = torch.cat([warp_data, cano_pose], dim=0)
+        merge_smplx_data["betas"] = smplx_data["betas"]
+        merge_smplx_data["transform_mat_neutral_pose"] = smplx_data["transform_mat_neutral_pose"]
+
+        with torch.autocast(device_type=device.type, dtype=torch.float32):
+            mean_3d = query_points + gs_attr.offset_xyz
+            if not getattr(self, '_fb_debug_done', False):
+                face_m = self.smplx_model.is_face.bool()
+                _md = mean_3d[face_m].float()
+                _qp = query_points[face_m].float()
+                _off = gs_attr.offset_xyz[face_m].float()
+                print(f"[DBG FB] query_points[face] mean={_qp.mean(0).tolist()}")
+                print(f"[DBG FB] offset_xyz[face]   norm_mean={_off.norm(dim=-1).mean().item():.4f}  max={_off.norm(dim=-1).max().item():.4f}")
+                print(f"[DBG FB] mean_3d[face]      mean={_md.mean(0).tolist()}")
+                self._fb_debug_done = True
+            transform_mat_neutral_pose = merge_smplx_data["transform_mat_neutral_pose"]
+            num_view = merge_smplx_data["body_pose"].shape[0]
+            mean_3d = mean_3d.unsqueeze(0).repeat(num_view, 1, 1)
+            query_points_r = query_points.unsqueeze(0).repeat(num_view, 1, 1)
+            transform_mat_neutral_pose = transform_mat_neutral_pose.unsqueeze(0).repeat(num_view, 1, 1, 1)
+
+            if gs_attr.offset_skinning_weight is not None:
+                offset_skinning_weight = gs_attr.offset_skinning_weight.unsqueeze(0).repeat(num_view, 1, 1)
+            else:
+                offset_skinning_weight = None
+
+            mean_3d, transform_matrix = self.smplx_model.transform_to_posed_verts_face_blend(
+                mean_3d,
+                gs_attr.scaling.unsqueeze(0).repeat(num_view, 1, 1),
+                gs_attr.rotation.unsqueeze(0).repeat(num_view, 1, 1),
+                merge_smplx_data,
+                query_points_r,
+                transform_mat_neutral_pose=transform_mat_neutral_pose,
+                device=device,
+                offset_skinning_weight=offset_skinning_weight,
+            )
+
+            if not getattr(self, '_fb_debug2_done', False):
+                face_m = self.smplx_model.is_face.bool()
+                _posed = mean_3d[0][face_m].float()
+                print(f"[DBG FB] posed face mean_3d[0][face] mean={_posed.mean(0).tolist()}  norm_mean={_posed.norm(dim=-1).mean().item():.4f}")
+                self._fb_debug2_done = True
+
+            num_view, N, _, _ = transform_matrix.shape
+            transform_rotation = transform_matrix[:, :, :3, :3]
+            rigid_rotation_matrix = torch.nn.functional.normalize(
+                matrix_to_quaternion(transform_rotation), dim=-1
+            )
+            I = matrix_to_quaternion(torch.eye(3)).to(device)
+            is_constrain_body = self.smplx_model.is_constrain_body
+            rigid_rotation_matrix[:, is_constrain_body] = I
+            rotation_neutral_pose = gs_attr.rotation.unsqueeze(0).repeat(num_view, 1, 1)
+            rotation_pose_verts = quaternion_multiply(rigid_rotation_matrix, rotation_neutral_pose)
+
+        gs_list = []
+        cano_gs_list = []
+        mask_gs_list = []
+        for i in range(num_view):
+            gs_copy = GaussianModel(
+                xyz=mean_3d[i],
+                opacity=gs_attr.opacity,
+                rotation=rotation_pose_verts[i],
+                scaling=gs_attr.scaling,
+                shs=gs_attr.shs,
+                use_rgb=self.gs_net.use_rgb,
+            )
+            mask_gs_copy = GaussianModel(
+                xyz=mean_3d[i],
+                opacity=torch.full_like(gs_attr.opacity, 0.95),
+                rotation=rotation_pose_verts[i],
+                scaling=torch.full_like(gs_attr.scaling, 0.002),
+                shs=gs_attr.shs,
+                use_rgb=self.gs_net.use_rgb,
+            )
+            if i == num_view - 1:
+                cano_gs_list.append(gs_copy)
+            else:
+                gs_list.append(gs_copy)
+                mask_gs_list.append(mask_gs_copy)
+
+        return gs_list, cano_gs_list, mask_gs_list
+
+    def forward_animate_gs_face_blend(
+        self, gs_attr_list, query_points, smplx_data, c2w, intrinsic, height, width, background_color, debug=False
+    ):
+        """Like forward_animate_gs but uses animate_gs_model_face_blend for per-region skinning."""
+        batch_size = len(gs_attr_list)
+        out_list = []
+        N_Ref = smplx_data["root_pose"].shape[1]
+
+        for b in range(batch_size):
+            gs_attr = gs_attr_list[b]
+            query_pt = query_points[b]
+            merge_animatable_gs_model_list, cano_gs_model_list, mask_gs_list = self.animate_gs_model_face_blend(
+                gs_attr, query_pt, self.get_single_batch_smpl_data(smplx_data, b), debug=debug
+            )
+            animatable_gs_model_list = merge_animatable_gs_model_list[:N_Ref]
+            out_list.append(
+                self.forward_single_batch(
+                    animatable_gs_model_list,
+                    c2w[b], intrinsic[b], height, width,
+                    background_color[b] if background_color is not None else None,
+                    debug=debug,
+                )
+            )
+
+        out = defaultdict(list)
+        for out_ in out_list:
+            for k, v in out_.items():
+                out[k].append(v)
+        for k, v in out.items():
+            if isinstance(v[0], torch.Tensor):
+                out[k] = torch.stack(v, dim=0)
+            else:
+                out[k] = v
+        out["comp_rgb"] = out["comp_rgb"].permute(0, 1, 4, 2, 3).contiguous()
+        out["comp_mask"] = out["comp_mask"].permute(0, 1, 4, 2, 3).contiguous()
+        out["comp_depth"] = out["comp_depth"].permute(0, 1, 4, 2, 3).contiguous()
+        return out
 
     def forward_animate_gs(
         self,

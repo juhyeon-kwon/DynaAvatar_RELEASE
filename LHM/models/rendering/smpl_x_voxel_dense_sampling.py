@@ -1148,6 +1148,79 @@ class SMPLXVoxelMeshModel(nn.Module):
         
         return transform_mat_vertex
 
+    def get_transform_mat_vertex_face_blend(self, transform_mat_joint, mean_3d, scale, rotation, fix_mask, offset_skinning_weight):
+        """face/hand verts (fix_mask) → skinning_weight_original (LHM style),
+        body verts → query_skinning + optional offset_skinning_weight (DynaAvatar style)."""
+        batch_size = transform_mat_joint.shape[0]
+        query_skinning = self.query_volume_voxel_skinning_weights(mean_3d, scale, rotation)
+
+        if offset_skinning_weight is not None:
+            body_mask = ~fix_mask  # [B, N] — body only
+            qs_body = query_skinning[body_mask] + offset_skinning_weight[body_mask] * 0.1
+            qs_body = F.normalize(torch.abs(qs_body), p=1, dim=-1)
+            query_skinning = query_skinning.clone()
+            query_skinning[body_mask] = qs_body
+        else:
+            query_skinning = query_skinning.clone()
+
+        # face/hand vertices use original SMPLX skinning weights (LHM style)
+        skinning_weight_original = self.skinning_weight_original.unsqueeze(0).repeat(batch_size, 1, 1)
+        query_skinning[fix_mask] = skinning_weight_original[fix_mask]
+
+        transform_mat_vertex = torch.matmul(
+            query_skinning,
+            transform_mat_joint.view(batch_size, self.smpl_x.joint_num, 16),
+        ).view(batch_size, self.smpl_x.vertex_num_upsampled, 4, 4)
+        return transform_mat_vertex
+
+    def transform_to_posed_verts_face_blend(
+        self, mean_3d, scale, rotation, smplx_data, mesh_neutral_pose, transform_mat_neutral_pose, device, offset_skinning_weight=None
+    ):
+        """Like transform_to_posed_verts_from_neutral_pose but uses face-blend skinning:
+        face/hand vertices → skinning_weight_original (LHM style),
+        body vertices → query_skinning + offset_skinning_weight (DynaAvatar style)."""
+        batch_size = mean_3d.shape[0]
+        shape_param = smplx_data["betas"]
+        face_offset = smplx_data.get("face_offset", None)
+        joint_offset = smplx_data.get("joint_offset", None)
+
+        if shape_param.shape[0] != batch_size:
+            num_views = batch_size // shape_param.shape[0]
+            shape_param = shape_param.unsqueeze(1).repeat(1, num_views, 1).view(-1, shape_param.shape[1])
+            if face_offset is not None:
+                face_offset = face_offset.unsqueeze(1).repeat(1, num_views, 1, 1).view(-1, *face_offset.shape[1:])
+            if joint_offset is not None:
+                joint_offset = joint_offset.unsqueeze(1).repeat(1, num_views, 1, 1).view(-1, *joint_offset.shape[1:])
+
+        try:
+            smplx_expr_offset = (smplx_data["expr"].unsqueeze(1).unsqueeze(1) * self.expr_dirs).sum(-1)
+        except:
+            smplx_expr_offset = 0.0
+
+        mean_3d = mean_3d + smplx_expr_offset
+        blend_shape_offset = blend_shapes(shape_param, self.shape_dirs)
+        mean_3d = mean_3d + blend_shape_offset
+
+        mask = ((self.is_rhand + self.is_lhand + self.is_face) > 0).unsqueeze(0).repeat(batch_size, 1)
+
+        transform_mat_null_vertex = self.get_transform_mat_vertex_face_blend(
+            transform_mat_neutral_pose, mean_3d, scale, rotation, mask, offset_skinning_weight
+        )
+        null_mean_3d = self.lbs(mean_3d, transform_mat_null_vertex, torch.zeros_like(smplx_data["trans"]))
+
+        joint_null_pose = self.get_zero_pose_human(
+            shape_param=shape_param, device=device, face_offset=face_offset, joint_offset=joint_offset
+        )
+        transform_mat_joint, j3d = self.get_transform_mat_joint(None, joint_null_pose, smplx_data)
+
+        transform_mat_vertex = self.get_transform_mat_vertex_face_blend(
+            transform_mat_joint, mean_3d, scale, rotation, mask, offset_skinning_weight
+        )
+        posed_mean_3d = self.lbs(null_mean_3d, transform_mat_vertex, smplx_data["trans"])
+        neutral_to_posed_vertex = torch.matmul(transform_mat_vertex, transform_mat_null_vertex)
+
+        return posed_mean_3d, neutral_to_posed_vertex
+
     def get_posed_blendshape(self, smplx_param):
         # posed_blendshape is only applied on hand and face, which parts are closed to smplx model
         root_pose = smplx_param["root_pose"]

@@ -574,9 +574,6 @@ class SD3MMJointTransformerBlock(nn.Module):
             Tuple[torch.FloatTensor, torch.FloatTensor]: Tuple containing the updated hidden states and encoder hidden states.
         """
 
-        if temb is None:
-            pdb.set_trace()
-
         norm_hidden_states, gate_msa, shift_mlp, scale_mlp, gate_mlp = self.norm1(
             hidden_states, emb=temb
         )

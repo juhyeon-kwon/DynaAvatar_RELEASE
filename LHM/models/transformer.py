@@ -338,8 +338,8 @@ class TransformerDecoder(nn.Module):
 
             x = self.norm(x)
 
-            # post dynamic layers
-            if self.is_dynamic:
+            # post dynamic layers – skip entirely when temb2 is None (base inference)
+            if self.is_dynamic and temb2 is not None:
                 for dynamic_layer in self.dynamic_layers:
                     if self.training and self.gradient_checkpointing:
                         x, motion_cond = torch.utils.checkpoint.checkpoint(
