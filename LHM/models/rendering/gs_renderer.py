@@ -1599,6 +1599,31 @@ class GS3DRenderer(nn.Module):
                 print(f"[DBG FB] posed face mean_3d[0][face] mean={_posed.mean(0).tolist()}  norm_mean={_posed.norm(dim=-1).mean().item():.4f}")
                 self._fb_debug2_done = True
 
+            import os as _os
+            if _os.environ.get('FB_DEBUG_DUMP') and not getattr(self, '_fb_dump_done', False):
+                import numpy as _np
+                _smplx_np = {
+                    'smplx_' + k: v.detach().float().cpu().numpy()
+                    for k, v in smplx_data.items() if torch.is_tensor(v)
+                }
+                _np.savez(
+                    _os.environ['FB_DEBUG_DUMP'],
+                    query_points=query_points.detach().float().cpu().numpy(),
+                    offset_xyz=gs_attr.offset_xyz.detach().float().cpu().numpy(),
+                    scaling=gs_attr.scaling.detach().float().cpu().numpy(),
+                    rotation=gs_attr.rotation.detach().float().cpu().numpy(),
+                    opacity=gs_attr.opacity.detach().float().cpu().numpy(),
+                    posed_mean3d=mean_3d.detach().float().cpu().numpy(),
+                    is_face=self.smplx_model.is_face.cpu().numpy(),
+                    offset_skinning_weight=(
+                        offset_skinning_weight[0].detach().float().cpu().numpy()
+                        if offset_skinning_weight is not None else _np.zeros(1)
+                    ),
+                    **_smplx_np,
+                )
+                self._fb_dump_done = True
+                print(f"[FB_DEBUG_DUMP] saved → {_os.environ['FB_DEBUG_DUMP']}")
+
             num_view, N, _, _ = transform_matrix.shape
             transform_rotation = transform_matrix[:, :, :3, :3]
             rigid_rotation_matrix = torch.nn.functional.normalize(
@@ -1610,6 +1635,22 @@ class GS3DRenderer(nn.Module):
             rotation_neutral_pose = gs_attr.rotation.unsqueeze(0).repeat(num_view, 1, 1)
             rotation_pose_verts = quaternion_multiply(rigid_rotation_matrix, rotation_neutral_pose)
 
+        import os as _os2
+        _fsm = float(_os2.environ.get('FB_FACE_SCALE_MULT', '1.0'))
+        scaling_render = gs_attr.scaling
+        if _fsm != 1.0:
+            face_m = self.smplx_model.is_face.bool()
+            if _os2.environ.get('FB_SCALE_LIP_ONLY'):
+                _qp = query_points
+                face_m = (face_m & ((_qp[:, 1] - 0.245).abs() < 0.022)
+                          & (_qp[:, 2] > 0.04) & (_qp[:, 0].abs() < 0.045))
+            scaling_render = gs_attr.scaling.clone()
+            scaling_render[face_m] = scaling_render[face_m] * _fsm
+            if not getattr(self, '_fsm_logged', False):
+                print(f"[FB_FACE_SCALE_MULT] scaling x{_fsm} on {face_m.sum().item()} pts "
+                      f"(lip_only={bool(_os2.environ.get('FB_SCALE_LIP_ONLY'))})")
+                self._fsm_logged = True
+
         gs_list = []
         cano_gs_list = []
         mask_gs_list = []
@@ -1618,7 +1659,7 @@ class GS3DRenderer(nn.Module):
                 xyz=mean_3d[i],
                 opacity=gs_attr.opacity,
                 rotation=rotation_pose_verts[i],
-                scaling=gs_attr.scaling,
+                scaling=scaling_render,
                 shs=gs_attr.shs,
                 use_rgb=self.gs_net.use_rgb,
             )

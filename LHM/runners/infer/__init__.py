@@ -15,3 +15,4 @@
 
 from .human_lrm import HumanLRMInferrer
 from .human_lrm_face_blend import HumanLRMFaceBlendInferrer
+from .human_lrm_face_blend_multi import HumanLRMFaceBlendMultiInferrer
